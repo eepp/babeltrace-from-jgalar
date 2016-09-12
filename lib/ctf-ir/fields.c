@@ -37,9 +37,10 @@
 #include <babeltrace/compiler-internal.h>
 #include <babeltrace/compat/fcntl-internal.h>
 #include <babeltrace/align-internal.h>
+#include <babeltrace/common-internal.h>
 #include <inttypes.h>
 
-#define PACKET_LEN_INCREMENT	(getpagesize() * 8 * CHAR_BIT)
+#define PACKET_LEN_INCREMENT   (bt_common_get_page_size() * 8 * CHAR_BIT)
 
 static
 struct bt_ctf_field *bt_ctf_field_integer_create(struct bt_ctf_field_type *);
