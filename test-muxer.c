@@ -2,6 +2,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <babeltrace/plugin/plugin.h>
 #include <babeltrace/graph/graph.h>
 #include <babeltrace/graph/port.h>
@@ -98,8 +99,13 @@ int main(int argc, char *argv[])
 	size_t i;
 	uint64_t count;
 
+	if (argc < 2) {
+		fprintf(stderr, "passe-moé l'url de la trace en argument.\n");
+		exit(1);
+	}
+
 	assert(graph);
-	ctf_fs_cc = bt_plugin_find_component_class("ctf", "fs", BT_COMPONENT_CLASS_TYPE_SOURCE);
+	ctf_fs_cc = bt_plugin_find_component_class("ctf", "lttng-live", BT_COMPONENT_CLASS_TYPE_SOURCE);
 	assert(ctf_fs_cc);
 	utils_muxer_cc = bt_plugin_find_component_class("utils", "muxer", BT_COMPONENT_CLASS_TYPE_FILTER);
 	assert(utils_muxer_cc);
@@ -111,15 +117,19 @@ int main(int argc, char *argv[])
 	assert(muxer_comp);
 	params = bt_value_map_create();
 	assert(params);
-	ret = bt_value_map_insert_string(params, "path", argv[1]);
+	ret = bt_value_map_insert_string(params, "url", argv[1]);
 	assert(ret == 0);
 	fs_comp = bt_component_create(ctf_fs_cc, "live-comp", params);
 	assert(fs_comp);
 	count = bt_component_source_get_output_port_count(fs_comp);
 	assert(count >= 0);
+
 	ret = bt_graph_add_port_added_listener(graph, port_added_listener,
 		muxer_comp);
 	assert(ret == 0);
+	//ret = bt_graph_add_ports_disconnected_listener(graph,
+	//	ports_disconnected_listener, muxer_comp);
+	//assert(ret == 0);
 
 	for (i = 0; i < count; i++) {
 		struct bt_port *port =
@@ -142,8 +152,8 @@ int main(int argc, char *argv[])
 		graph_status = bt_graph_run(graph);
 
 		if (graph_status == BT_GRAPH_STATUS_AGAIN) {
-			/* Wait 100 ms... */
-			usleep(100 * 1000);
+			/* Wait 1000 ms... */
+			usleep(1000 * 1000);
 		}
 	}
 
