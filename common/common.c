@@ -91,11 +91,19 @@ const char *bt_common_get_system_plugin_path(void)
 	return SYSTEM_PLUGIN_PATH;
 }
 
+#ifdef __MINGW32__
+BT_HIDDEN
+bool bt_common_is_setuid_setgid(void)
+{
+	return false;
+}
+#else
 BT_HIDDEN
 bool bt_common_is_setuid_setgid(void)
 {
 	return (geteuid() != getuid() || getegid() != getgid());
 }
+#endif
 
 static
 char *bt_secure_getenv(const char *name)
