@@ -31,6 +31,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -702,6 +703,7 @@ An integer field type has the following properties:
         integer fields
     <td>Specified at creation
     <td>bt_ctf_field_type_integer_get_size()
+    <td>bt_ctf_field_type_integer_set_size()
     <td>None: specified at creation (bt_ctf_field_type_integer_create())
   </tr>
   <tr>
@@ -790,6 +792,30 @@ extern struct bt_ctf_field_type *bt_ctf_field_type_integer_create(
 */
 extern int bt_ctf_field_type_integer_get_size(
 		struct bt_ctf_field_type *int_field_type);
+
+/**
+@brief	Sets the storage size, in bits of the @intfields described by
+	the @intft \p int_field_type.
+
+@param[in] int_field_type	Integer field type which describes the
+				integer fields of which to set the
+				signedness.
+@param[in] size			Storage size (bits) of the integer fields
+				described by \p int_field_type; must be > 0
+				and < 65.
+@returns			0 on success, or a negative value on error.
+
+@prenotnull{int_field_type}
+@preisintft{int_field_type}
+@prehot{int_field_type}
+@pre \p size is > 0 and < 65.
+@postrefcountsame{event_class}
+
+@sa bt_ctf_field_type_integer_set_size(): Set the size of the integer fields
+	described by a given integer field type.
+*/
+extern int bt_ctf_field_type_integer_set_size(
+		struct bt_ctf_field_type *int_field_type, size_t size);
 
 /**
 @brief  Returns whether or not the @intfields described by the @intft
