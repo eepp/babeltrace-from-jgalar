@@ -704,7 +704,6 @@ An integer field type has the following properties:
     <td>Specified at creation
     <td>bt_ctf_field_type_integer_get_size()
     <td>bt_ctf_field_type_integer_set_size()
-    <td>None: specified at creation (bt_ctf_field_type_integer_create())
   </tr>
   <tr>
     <td><strong>Signedness</strong> of the described integer fields
@@ -766,6 +765,10 @@ enum bt_ctf_integer_base {
 @brief  Creates a default @intft with \p size bits as the storage size
 	of the @intfields it describes.
 
+You can change the storage size of the integer fields described by
+the created integer field type later with
+bt_ctf_field_type_integer_set_size().
+
 @param[in] size	Storage size (bits) of the described integer fields.
 @returns	Created integer field type, or \c NULL on error.
 
@@ -789,30 +792,32 @@ extern struct bt_ctf_field_type *bt_ctf_field_type_integer_create(
 @prenotnull{int_field_type}
 @preisintft{int_field_type}
 @postrefcountsame{int_field_type}
+
+@sa bt_ctf_field_type_integer_set_size(): Sets the storage size of the
+	integer fields described by a given integer field type.
 */
 extern int bt_ctf_field_type_integer_get_size(
 		struct bt_ctf_field_type *int_field_type);
 
 /**
-@brief	Sets the storage size, in bits of the @intfields described by
+@brief	Sets the storage size, in bits, of the @intfields described by
 	the @intft \p int_field_type.
 
 @param[in] int_field_type	Integer field type which describes the
 				integer fields of which to set the
-				signedness.
+				storage size.
 @param[in] size			Storage size (bits) of the integer fields
-				described by \p int_field_type; must be > 0
-				and < 65.
+				described by \p int_field_type.
 @returns			0 on success, or a negative value on error.
 
 @prenotnull{int_field_type}
 @preisintft{int_field_type}
 @prehot{int_field_type}
-@pre \p size is > 0 and < 65.
-@postrefcountsame{event_class}
+@pre \p size is greater than 0 and lesser than or equal to 64.
+@postrefcountsame{int_field_type}
 
-@sa bt_ctf_field_type_integer_set_size(): Set the size of the integer fields
-	described by a given integer field type.
+@sa bt_ctf_field_type_integer_get_size(): Returns the storage size of
+	the integer fields described by a given integer field type.
 */
 extern int bt_ctf_field_type_integer_set_size(
 		struct bt_ctf_field_type *int_field_type, size_t size);
@@ -855,7 +860,7 @@ extern int bt_ctf_field_type_integer_get_signed(
 @preisintft{int_field_type}
 @prehot{int_field_type}
 @pre \p is_signed is 0 or 1.
-@postrefcountsame{event_class}
+@postrefcountsame{int_field_type}
 
 @sa bt_ctf_field_type_integer_get_signed(): Returns the signedness of
 	the integer fields described by a given integer field type.
