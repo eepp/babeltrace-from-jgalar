@@ -1,0 +1,58 @@
+babeltrace-plugin-sink-utils.dummy(7)
+=====================================
+:manpagetype: component class
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-sink-utils.dummy - Babeltrace's dummy sink component class
+
+
+DESCRIPTION
+-----------
+The Babeltrace `utils.dummy` sink component class, member of the
+man:babeltrace-plugin-utils(7) plugin, once instantiated, receives
+events from one or more input connections and does absolutely nothing
+with them.
+
+----
+... -.
+      \ +------------------+
+... --->| utils.dummy sink |
+      / +------------------+
+... -'
+----
+
+A `utils.dummy` sink component can be useful to run the conversion graph
+with no side effect, for example to perform benchmark tests.
+
+
+INITIALIZATION PARAMETERS
+-------------------------
+This component class ignores its initialization parameters.
+
+
+PORTS
+-----
+A `utils.dummy` sink component only has a default input port.
+
+
+QUERY OBJECTS
+-------------
+This component class has no objects to query.
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Philippe Proulx.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-utils(7)

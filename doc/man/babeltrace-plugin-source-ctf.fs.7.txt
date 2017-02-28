@@ -1,0 +1,280 @@
+babeltrace-plugin-source-ctf.fs(7)
+==================================
+:manpagetype: component class
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-source-ctf.fs - Babeltrace's CTF from file system
+source component class
+
+
+DESCRIPTION
+-----------
+The Babeltrace `ctf.fs` source component class, member of the
+man:babeltrace-plugin-ctf(7) plugin, once instantiated, opens one or
+more CTF traces on the file system and emits their events in order.
+
+If the param:recurse parameter is not true, then the param:path
+parameter _must_ be a directory which contains the CTF stream files of
+the trace to read.
+
+----
+ CTF       +---------------+
+stream --->| ctf.fs source |---> ...
+files      +---------------+
+----
+
+If the param:recurse parameter is true, then the created component (also
+known as the original component) recurses through the file hierarchy of
+the directory given in the param:path parameter to find CTF traces. The
+original component handles the first CTF trace that it finds. The other
+CTF traces are handled by sibling components that are created by the
+original one. On the first, and only the first connection with the
+original component, the sibling components are connected to the same
+downstream component:
+
+----
+ CTF       +---------------+
+stream --->| ctf.fs source |-.-> ...
+files      |   (original)  | |
+           +---------------+ |
+                             |
+ CTF       +---------------+ |
+stream --->| ctf.fs source |-|
+files      +---------------+ |
+                             |
+ CTF       +---------------+ |
+stream --->| ctf.fs source |-|
+files      +---------------+ |
+                             |
+ CTF       +---------------+ |
+stream --->| ctf.fs source |-'
+files      +---------------+
+----
+
+For example, when you connect a second downstream component to the
+orignal component:
+
+----
+                                 +------------------+
+                                 | other downstream |
+                   .------------>|    component     |
+                   |             +------------------+
+                   |
+ CTF       +-------'-------+
+stream --->| ctf.fs source |-.-> ...
+files      |   (original)  | |
+           +---------------+ |
+                             |
+ CTF       +---------------+ |
+stream --->| ctf.fs source |-|
+files      +---------------+ |
+                             |
+ CTF       +---------------+ |
+stream --->| ctf.fs source |-|
+files      +---------------+ |
+                             |
+ CTF       +---------------+ |
+stream --->| ctf.fs source |-'
+files      +---------------+
+----
+
+A `ctf.fs` source component decodes and handles LTTng packet index
+files to accelerate seeking operations.
+
+As a fix on the consumer side, a `ctf.fs` source component marks all the
+clock classes of an LTTng trace as absolute.
+
+
+INITIALIZATION PARAMETERS
+-------------------------
+The following parameters are optional unless indicated otherwise.
+
+param:path='PATH' (string, mandatory)::
+    If param:recurse is true, 'PATH' is a path to a directory from which
+    to recursively find CTF traces. If param:recurse is false, 'PATH' is
+    a path to a directory which contains CTF stream files.
+
+param:recurse=`no` (boolean)::
+    Do not recurse to find CTF traces on the file system: treat
+    param:path as a path to a trace directory which contains CTF
+    stream files.
+
+
+PORTS
+-----
+A `ctf.fs` source component only has a default output port.
+
+
+QUERY OBJECTS
+-------------
+`begin`::
+    The very first timestamp of a trace.
++
+*Parameters* (map):
++
+--
+param:path='PATH' (string, mandatory)::
+    Path to the trace directory which contains CTF stream files.
+
+param:clock-class-name='NAME' (string)::
+    Name of the clock class which describes the clock from which to
+    get the first value of the trace. If not specified, the first
+    defined clock class of the trace is used.
+--
++
+*Returns* (map):
++
+--
+`cycles` (integer)::
+    Value of the selected clock, in cycles, at the beginning of the
+    trace.
+
+`clock-class` (map)::
+    Selected clock class:
++
+--
+`name` (string)::
+    Name within the trace.
+
+`description` (string, optional)::
+    Description.
+
+`frequency` (integer)::
+    Frequency (Hz).
+
+`offset-cycles` (integer)::
+    Offset, in clock cycles at the given frequency, since the offset
+    given by `offset-seconds`.
+
+`offset-seconds` (integer)::
+    Offset, in seconds since some origin (Unix epoch if `is-absolute` is
+    true).
+
+`error-cycles` (integer)::
+    Error on the values of the clocks, in cycles at the given frequency.
+
+`is-absolute` (boolean)::
+    True if this clock class is absolute, that is, its offset is from
+    the Unix epoch.
+
+`uuid` (string, optional)::
+    UUID.
+--
+--
+
+`end`::
+    The very last timestamp of a trace.
++
+*Parameters* (map):
++
+--
+param:path='PATH' (string, mandatory)::
+    Path to the trace directory which contains CTF stream files.
+
+param:clock-class-name='NAME' (string)::
+    Name of the clock class which describes the clock from which to
+    get the last value of the trace. If not specified, the first
+    defined clock class of the trace is used.
+--
++
+*Returns* (map):
++
+--
+`cycles` (integer)::
+    Value of the selected clock, in cycles, at the end of the trace.
+
+`clock-class` (map)::
+    Selected clock class:
++
+--
+`name` (string)::
+    Name within the trace.
+
+`description` (string, optional)::
+    Description.
+
+`frequency` (integer)::
+    Frequency (Hz).
+
+`offset-cycles` (integer)::
+    Offset, in clock cycles at the given frequency, since the offset
+    given by `offset-seconds`.
+
+`offset-seconds` (integer)::
+    Offset, in seconds since some origin (Unix epoch if `is-absolute` is
+    true).
+
+`error-cycles` (integer)::
+    Error on the values of the clocks, in cycles at the given frequency.
+
+`is-absolute` (boolean)::
+    True if this clock class is absolute, that is, its offset is from
+    the Unix epoch.
+
+`uuid` (string, optional)::
+    UUID.
+--
+--
+
+`has-stream-intersection`::
+    Whether or not the trace has a stream intersection, that is, a
+    period of time where all data streams are ``active''.
++
+*Parameters* (map):
++
+--
+param:path='PATH' (string, mandatory)::
+    Path to the trace directory which contains CTF stream files.
+--
++
+*Returns* (boolean): true if the trace has a stream intersection.
+
+`metadata` (supports pretty formatting)::
+    Textual metadata, with the packet headers removed if necessary.
++
+*Parameters* (map):
++
+--
+param:path='PATH' (string, mandatory)::
+    Path to the trace directory which contains the `metadata` file.
+--
++
+*Returns* (string): the whole metadata text.
+
+`metadata-info`::
+    Metadata information.
++
+*Parameters* (map):
++
+--
+param:path='PATH' (string, mandatory)::
+    Path to the trace directory which contains the `metadata` file.
+--
++
+*Returns* (map):
++
+--
+`text` (string)::
+    Metadata text.
+
+`is-packetized` (boolean)::
+    True if the CTF trace's metadata file is packetized.
+--
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Jérémie Galarneau, Philippe Proulx.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-ctf(7)

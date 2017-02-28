@@ -1,0 +1,474 @@
+babeltrace-convert(1)
+=====================
+:manpagetype: command
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-convert - Convert one or more traces
+
+
+SYNOPSIS
+--------
+[verse]
+*babeltrace convert* ['GENERAL OPTIONS'] [opt:--omit-home-plugin-path]
+                   [opt:--omit-system-plugin-path]
+                   [opt:--plugin-path='PATH'[:__PATH__]...]
+                   ['COMPONENTS' [opt:--connect='CONNECTION']...]
+
+
+DESCRIPTION
+-----------
+The `convert` command creates a conversion graph and runs it.
+
+The `convert` command uses libbabeltrace to dynamically load _plugins_
+which supply _component classes_. You can _instantiate_ component
+classes as _components_. The three types of components are:
+
+Source component::
+    An input component which provides events and other types of
+    notifications.
++
+Examples: log file input, LTTng-live input, random event generator.
+
+Filter component::
+    An intermediate component which can discard the events it receives,
+    transform them, augment them, sort them, or create create new ones.
++
+Examples: filter which removes events based on an expression,
+filter which adds debugging information to selected events, event
+multiplexer.
+
+Sink component::
+    An output component which does something useful with the events it
+    receives, usually writing them to a file with a specific format.
++
+Examples: log file output, CTF trace output, text output on the
+console.
+
+You can let the command connect the created components automatically
+or, if you have an atypical use case, you can connect them manually.
+
+Here's an example of a very simple conversion graph:
+
+----
+             +--------+    +--------+    +------+
+log file --->| source |--->| filter |--->| sink |---> database
+             +--------+    +--------+    +------+
+----
+
+
+[[comp-create]]
+Create components
+~~~~~~~~~~~~~~~~~
+Use the opt:--source='PLUGIN.COMPCLS', opt:--filter='PLUGIN.COMPCLS', or
+opt:--sink='PLUGIN.COMPCLS' to create a source, filter, or sink
+component. Here, 'PLUGIN' is the plugin name (not its path) and
+'COMPCLS' is the component class name. You can use the
+man:babeltrace-list-plugins(1) command to dynamically list the available
+plugins and their component classes.
+
+When you create a component with one of the previous options, it is set
+as the _current component_ at this point of the command line. You can
+then use options that apply to the current component, namely:
+
+* opt:--params, opt:--path, opt:--begin, opt:--end, and opt:--timerange:
+  see <<comp-params,Parametrize the current component>>.
+* opt:--name: see <<graph,Connect components>>.
+
+.Create two source components and one sink component.
+====
+----
+babeltrace convert --source=my-plugin.my-source \
+                   --source=my-plugin.my-source --sink=text.text
+----
+====
+
+
+[[comp-params]]
+Parametrize the current component
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+When you instantiate a plugin's component class with one of the
+opt:--source, opt:--filter, or opt:--sink options, this component is
+known as the _current component_ at this point of the command line. It
+remains the current component until the next opt:--source, opt:--filter,
+or opt:--sink option is found.
+
+Each component class expects a specific set of mandatory and optional
+initialization parameters which are described in the documentation of
+the plugin or component class. You can get basic help for a plugin or
+component class with the man:babeltrace-help(1) command.
+
+You can set the initialization parameters of the current component with
+the opt:--params='PARAMS' option. See <<params-fmt,Parameters format>>
+for the exact format of 'PARAMS'.
+
+.Create a sink component with parameters.
+====
+[role="term"]
+----
+babeltrace convert ... --sink=plugin.compcls \
+                   --params='show=yes, offset=18, emph="my-event"'
+----
+====
+
+At any point of the command line, you can set the current
+_base parameters_ with the opt:--base-params option and reset them
+with the opt:--reset-base-params option. When a opt:--param option is
+encountered, it _extends_ the current base parameters: a specific
+parameter replaces a base parameter if they share the same name.
+
+.Set and reset base parameters.
+====
+[role="term"]
+----
+babeltrace convert --source=plugin.src --params=a=23,b=17 \
+                   --base-params=c=yes,d=-23 \
+                   --filter=plugin.filt \
+                   --filter=plugin.filt --params=f=no,d=144 \
+                   --reset-base-params \
+                   --sink=plugin.sink --params=e=19
+----
+
+The previous command line is the equivalent of this one without
+using opt:--base-params and opt:--reset-base-params:
+
+[role="term"]
+----
+babeltrace convert --source=plugin.src --params=a=23,b=17 \
+                   --filter=plugin.filt --params=c=yes,d=-23 \
+                   --filter=plugin.filt --params=c=yes,d=144,f=no \
+                   --sink=plugin.sink --params=e=19
+----
+====
+
+The opt:--path='PATH' option sets the `path` parameter of the current
+component to 'PATH'. You can use this option instead of manually
+specifying `path=PATH` in a opt:--params option to use tilde expansion
+(`~`). Tilde expansion requires the tilde to be the first character of
+the argument, which is not possible with `path=PATH`.
+
+.Use the opt:--params and opt:--path options together.
+====
+You can use the opt:--params option and any of the four options above
+together:
+
+[role="term"]
+----
+babeltrace convert --source=plugin.src --params=kilo=joule,id=23 \
+                   --path ~/my-traces/my-favorite-trace ...
+----
+====
+
+
+[[graph]]
+Connect components
+~~~~~~~~~~~~~~~~~~
+By default, the `convert` command creates a conversion graph with the
+created source, filter, and sink components by connecting them as such:
+
+* All the created source components connect to a `utils.muxer` filter
+  component. The `utils.muxer` component multiplexes its input
+  connections into a single output connection. See
+  man:babeltrace-plugin-filter-utils.muxer(7) for more details.
+
+* The `utils.muxer` filter component connects to a linear chain of
+  filter components created, in order, by the command line.
+
+* The last filter of the filter chain connects to all the created sink
+  components.
+
+.Automatic component connections.
+====
+With this command line:
+
+[role="term"]
+----
+babeltrace convert --source=plugin.src1 --source=plugin.src2 \
+                   --filter=plugin.filt1 --filter=plugin.filt2 \
+                   --sink=plugin.sink1 --sink=plugin.sink2
+----
+
+The created graph is:
+
+----
++-------------+
+| plugin.src1 |-.
++-------------+  \ +-------------+
+                  >| utils.muxer |
++-------------+  / +-------------+
+| plugin.src2 |-'         V
++-------------+    +--------------+
+                   | plugin.filt1 |
+                   +--------------+    +--------------+
+                          V          .>| plugin.sink1 |
+                   +--------------+ /  +--------------+
+                   | plugin.filt2 |:
+                   +--------------+ \  +--------------+
+                                     '>| plugin.sink2 |
+                                       +--------------+
+----
+====
+
+The `convert` command assigns automatic names to component instances.
+You can set the name of the current component with the opt:--name
+option.
+
+If the automatic component connections do not satisfy your use case, you
+can manually connect the components you create by using the
+opt:--connect='CONNECTION' option one or more times. The format of
+'CONNECTION' is:
+
+[verse]
+__UPSTREAM__[__UPSTREAM-PORT__]:__DOWNSTREAM__[__DOWNSTREAM-PORT__]
+
+'UPSTREAM'::
+    Name of the source or filter component on the upstream side of the
+    connection.
+
+'UPSTREAM-PORT'::
+    Name of the upstream component's port. The component's default
+    port is used if not specified.
+
+'DOWNSTREAM'::
+    Name of the filter or sink component on the downstream side of the
+    connection.
+
+'DOWNSTREAM-PORT'::
+    Name of the downstream component's port. The component's default
+    port is used if not specified.
+
+The automatic connection mechanism is disabled as soon as you specify
+one opt:--connect option. In this case, you _must_ connect all the
+created components manually. This also means that:
+
+* You must set the explicit names of all the components with the
+  opt:--name option.
+
+* There is no implicit `utils.muxer` filter component.
+
+* You cannot use the opt:--begin, opt:--end, and opt:--timerange options
+  to implicitly create a `utils.trimmer` filter component (see
+  <<trim,Trim traces>>).
+
+.Manual component connections.
+====
+With this command line:
+
+[role="term"]
+----
+babeltrace convert --source=plugin.src --name=SRC1 \
+                   --source=plugin.src --name=SRC2 \
+                   --filter=plugin.filt --name=FILT1 \
+                   --filter=plugin.filt --name=FILT2 \
+                   --filter=utils.muxer --name=MUX \
+                   --sink=plugin.sink --name=SINK1 \
+                   --sink=plugin.sink --name=SINK2 \
+                   --connect=SRC1:FILT1 \
+                   --connect=SRC2:FILT1 \
+                   --connect=SRC2:FILT2 \
+                   --connect=FILT1:MUX \
+                   --connect=FILT2:MUX \
+                   --connect=MUX:SINK1 \
+                   --connect=SRC1:SINK2 \
+
+----
+
+The created graph is:
+
+----
+            +-------+
+    .------>| SINK2 |
+    |       +-------+
+    |
++---'--+    +-------+
+| SRC1 |--->| FILT1 |-.
++------+  / +-------+  \ +-----+    +-------+
+         |              >| MUX |--->| SINK1 |
++------+ |  +-------+  / +-----+    +-------+
+| SRC2 |-'->| FILT2 |-'
++------+    +-------+
+----
+====
+
+
+[[trim]]
+Trim traces
+~~~~~~~~~~~
+You can trim the traces with the opt:--begin='BEGIN', opt:--end='END',
+and opt:--timerange='TIMERANGE' options. When you use any of those
+options, the `convert` command creates an implicit `utils.trimmer`
+filter component and adds it to the filter chain described in
+<<graph,Connect components>>.
+
+See <<time-fmt,Time option format>> for the format of the 'BEGIN',
+'END', and 'TIMERANGE' arguments.
+
+See man:babeltrace-plugin-filter-utils.trimmer(7) for more information
+about the `utils.trimmer` filter component class.
+
+
+include::common-cmd-params-format.txt[]
+
+
+include::common-cmd-plugin-path.txt[]
+
+
+[[time-fmt]]
+Time option format
+~~~~~~~~~~~~~~~~~~
+The format of the arguments of the opt:--begin and opt:--end options
+is:
+
+[verse]
+$$[$$__YYYY__-__MM__-__DD__ [__hh__:__mm__:]]__ss__[.__nnnnnnnnn__]
+
+'YYYY'::
+    4-digit year.
+
+'MM'::
+    2-digit month (January is `01`).
+
+'DD'::
+    2-digit day.
+
+'hh'::
+    2-digit hour (24-hour format).
+
+'mm'::
+    2-digit minute.
+
+'ss'::
+    2-digit second.
+
+'nnnnnnnnn'::
+    9-digit nanosecond.
+
+The format of the argument of the opt:--timerange option is:
+
+[verse]
+'BEGIN','END'
+
+'BEGIN'::
+    Beginning time, included (format of the opt:--begin option's
+    argument).
+
+'END'::
+    End time, included (format of the opt:--end option's argument).
+
+You may put the whole argument between square brackets.
+
+
+OPTIONS
+-------
+General options
+~~~~~~~~~~~~~~~
+include::common-gen-options.txt[]
+
+
+Component creation
+~~~~~~~~~~~~~~~~~~
+See <<comp-create,Create components>> for more information about the
+following options.
+
+opt:--filter='PLUGIN.COMPCLS'::
+    Instantiate the filter component class 'COMPCLS' found in the plugin
+    'PLUGIN' and set this instance as the current component.
+
+opt:-o 'PLUGIN.COMPCLS', opt:--sink='PLUGIN.COMPCLS'::
+    Instantiate the sink component class 'COMPCLS' found in the plugin
+    'PLUGIN' and set this instance as the current component.
+
+opt:-i 'PLUGIN.COMPCLS', opt:--source='PLUGIN.COMPCLS'::
+    Instantiate the source component class 'COMPCLS' found in the plugin
+    'PLUGIN' and set this instance as the current component.
+
+
+Component parameterization
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+See <<comp-params,Parametrize the current component>> for more
+information about the following options.
+
+opt:-b 'PARAMS', opt:--base-params='PARAMS'::
+    Set the current base parameters to 'PARAMS'. You can reset the
+    current base parameters with opt:--reset-base-params.
+
+opt:-p 'PARAMS', opt:--params='PARAMS'::
+    Set the initialization parameters of the current component to the
+    current base parameters extended with 'PARAMS'.
+
+opt:-P 'PATH', opt:--path='PATH'::
+    Sets the `path` parameter of the current component to 'PATH'. You
+    can use this option instead of manually specifying `path=PATH` in a
+    opt:--params option to use tilde expansion (`~`). Tilde expansion
+    requires the tilde to be the first character of the argument, which
+    is not possible with `path=PATH`.
+
+opt:-r, opt:--reset-base-params::
+    Reset the current base parameters. You can set the current base
+    parameters with opt:--base-params.
+
+
+Trace trimming
+~~~~~~~~~~~~~~
+See <<trim,Trim traces>> for more information about the following
+options.
+
+opt:--begin='BEGIN'::
+    Set the `begin` parameter of the implicit `utils.trimmer` filter
+    component to 'BEGIN', creating it if it does not exist. You cannot
+    use this option with opt:--timerange.
+
+opt:--end='END'::
+    Set the `end` parameter of the implicit `utils.trimmer` filter
+    component to 'END, creating it if it does not exist. You cannot use
+    this option with opt:--timerange.
+
+opt:--timerange='TIMERANGE'::
+    Set the `begin` and `end` parameters of the implicit `utils.trimmer`
+    filter component, creating it if it does not exist. You cannot use
+    this option with opt:--begin or opt:--end.
+
+Component connection
+~~~~~~~~~~~~~~~~~~~~
+See <<graph,Connect components>> for more information about the
+following options.
+
+opt:-c 'CONNECTION', opt:--connect='CONNECTION'::
+    Manually connect an upstream component to a downstream component
+    in the conversion graph. You can repeat this option to create
+    multiple connections.
+
+opt:--name='NAME'::
+    Set the name of the current component to 'NAME'. If you omit this
+    option and there's no opt:--connect option on the command line, the
+    command assigns a unique name to the component. The names of all the
+    components in the conversion graph must be unique.
+
+
+Plugin path
+~~~~~~~~~~~
+opt:--omit-home-plugin-path::
+    Do not search for plugins in `$HOME/.local/lib/babeltrace/plugins`.
+
+opt:--omit-system-plugin-path::
+    Do not search for plugins in +{system_plugin_path}+.
+
+opt:--plugin-path='PATH'[:__PATH__]...::
+    Add 'PATH' to the list of paths in which dynamic plugins can be
+    found.
+
+
+Command information
+~~~~~~~~~~~~~~~~~~~
+opt:-h, opt:--help::
+    Show command help and quit.
+
+
+include::common-cmd-footer.txt[]
+
+
+SEE ALSO
+--------
+man:babeltrace(1)

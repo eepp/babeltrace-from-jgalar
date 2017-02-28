@@ -1,0 +1,111 @@
+babeltrace(1)
+=============
+:manpagetype: program
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace - Convert one or more traces, and more
+
+
+SYNOPSIS
+--------
+[verse]
+*babeltrace* [opt:--debug] [opt:--verbose] '<<commands,COMMAND>>' ['COMMAND ARGUMENTS']
+
+
+DESCRIPTION
+-----------
+`babeltrace` is an open source trace converter. The tool can convert
+from one trace format to another, possibly with one or more filters in
+the conversion path, and perform other operations depending on the
+command 'COMMAND'.
+
+Most of the `babeltrace` commands load Babeltrace plugins to perform
+their operation. The search path for Babeltrace plugins is, in this
+order:
+
+. The colon-separated list of directories in the
+  `BABELTRACE_PLUGIN_PATH` environment variable.
+
+. The colon-separated list of directories in the specific command's
+  nlopt:--plugin-path option.
+
+. `$HOME/.local/lib/babeltrace/plugins`
+
+. +{system_plugin_path}+
+
+You can use the man:babeltrace-list-plugins(1) command to dynamically
+list the available plugins. See <<plugins,PLUGINS>> for a list of
+plugins shipped with Babeltrace.
+
+
+OPTIONS
+-------
+opt:-d, opt:--debug::
+    Turn the debugging mode on.
+
+opt:-v, opt:--verbose::
+    Turn the verbose mode on.
+
+opt:-h, opt:--help::
+    Show help and quit.
+
+opt:-V, opt:--version::
+    Show version and quit.
+
+
+[[commands]]
+COMMANDS
+--------
+The following commands also have their own nlopt:--help option.
+
+man:babeltrace-convert(1)::
+    Build a trace conversion graph and run it.
++
+This is the default command: you don't need to explicitly
+specify this command name to use it.
+
+man:babeltrace-help(1)::
+    Get help for a specific plugin or plugin's component class.
+
+man:babeltrace-list-plugins(1)::
+    List the available Babeltrace plugins and their component classes.
+
+man:babeltrace-query(1)::
+    Query objects from a component class.
+
+
+[[plugins]]
+PLUGINS
+-------
+The following plugins are provided by the Babeltrace project itself:
+
+man:babeltrace-plugin-ctf(7)::
+    CTF trace input (from the file system and from the LTTng-live
+    protocol) and output to the file system.
++
+* man:babeltrace-plugin-source-ctf.fs(7)
+* man:babeltrace-plugin-source-ctf.lttng-live(7)
+* man:babeltrace-plugin-sink-ctf.fs(7)
+
+man:babeltrace-plugin-text(7)::
+    Text output to the console or to a file.
++
+* man:babeltrace-plugin-sink-text.text(7)
+
+man:babeltrace-plugin-utils(7)::
+    Conversion graph utilities.
++
+* man:babeltrace-plugin-filter-utils.muxer(7)
+* man:babeltrace-plugin-filter-utils.trimmer(7)
+* man:babeltrace-plugin-sink-utils.dummy(7)
+
+
+include::common-cmd-footer.txt[]
+
+
+SEE ALSO
+--------
+bleh

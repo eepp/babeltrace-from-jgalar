@@ -1,0 +1,167 @@
+babeltrace-plugin-source-ctf.lttng-live(7)
+==========================================
+:manpagetype: component class
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-source-ctf.lttng-live - Babeltrace's CTF from
+LTTng-live source component class
+
+
+DESCRIPTION
+-----------
+The Babeltrace `ctf.lttng-live` source component class, member of the
+man:babeltrace-plugin-ctf(7) plugin, once instantiated, connects to
+a local or remote http://lttng.org/[LTTng] relay daemon and emits the
+received CTF events. Get more information in the
+http://lttng.org/docs/#doc-lttng-live[LTTng Documentation].
+
+A `ctf.lttng-live` component handles the events of one, and only one
+LTTng tracing session. A single LTTng tracing session can contain one
+or more traces, depending on the active tracing domains and the
+configured user space buffering scheme.
+
+The `ctf.lttng-live` component you create, also known as the original
+component, handles one CTF trace. The other CTF traces are handled by
+sibling components that are created by the original one. On the first,
+and only the first connection with the original component, the sibling
+components are connected to the same downstream component:
+
+----
+ CTF        +-----------------------+
+streams --->| ctf.lttng-live source |-.-> ...
+            |       (original)      | |
+            +-----------------------+ |
+                                      |
+ CTF        +-----------------------+ |
+streams --->| ctf.lttng-live source |-|
+            +-----------------------+ |
+                                      |
+ CTF        +-----------------------+ |
+streams --->| ctf.lttng-live source |-|
+            +-----------------------+ |
+                                      |
+ CTF        +-----------------------+ |
+streams --->| ctf.lttng-live source |-'
+            +-----------------------+
+----
+
+For example, when you connect a second downstream component to the
+orignal component:
+
+----
+                                 +------------------+
+                                 | other downstream |
+                        .------->|    component     |
+                        |        +------------------+
+                        |
+ CTF        +-----------'-----------+
+streams --->| ctf.lttng-live source |-.-> ...
+            |       (original)      | |
+            +-----------------------+ |
+                                      |
+ CTF        +-----------------------+ |
+streams --->| ctf.lttng-live source |-|
+            +-----------------------+ |
+                                      |
+ CTF        +-----------------------+ |
+streams --->| ctf.lttng-live source |-|
+            +-----------------------+ |
+                                      |
+ CTF        +-----------------------+ |
+streams --->| ctf.lttng-live source |-'
+            +-----------------------+
+----
+
+
+INITIALIZATION PARAMETERS
+-------------------------
+The following parameters are optional unless indicated otherwise.
+
+param:url='URL' (string, mandatory)::
+    The URL to use to connect to the LTTng relay daemon. The format
+    of 'URL' is:
++
+--
+[verse]
+net://__RHOST__[:__RPORT__]/__THOST__/__SESSION__
+
+'RHOST'::
+    LTTng relay daemon's host name or IP address.
+
+'RPORT'::
+    LTTng relay daemon's listening port. If not specified, the default
+    port, 5344, is used.
+
+'THOST'::
+    Target's host name or IP address.
+
+'SESSION'::
+    Name of the LTTng tracing session from which to receive events.
+--
+
+
+PORTS
+-----
+A `ctf.lttng-live` source component only has a default output port.
+
+
+QUERY OBJECTS
+-------------
+`sessions` (supports pretty formatting)::
+    Available tracing sessions for a given LTTng-live URL.
++
+*Parameters* (map):
++
+--
+param:url='URL' (string, mandatory)::
+    The URL to use to connect to the LTTng relay daemon. The format
+    of 'URL' is:
++
+--
+[verse]
+net://__RHOST__[:__RPORT__]/__THOST__
+
+'RHOST'::
+    LTTng relay daemon's host name or IP address.
+
+'RPORT'::
+    LTTng relay daemon's listening port. If not specified, the default
+    port, 5344, is used.
+
+'THOST'::
+    Target's host name or IP address.
+--
+--
++
+*Returns* (array of maps):
++
+--
+`name` (string)::
+    LTTng tracing session name.
+--
+
+
+LIMITATIONS
+-----------
+A `ctf.lttng-live` source component supports a single connection, and
+only one notification iterator on this connection.
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Mathieu Desnoyers.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:lttng-create(1),
+man:babeltrace-plugin-ctf(7),
+man:lttng-relayd(8)

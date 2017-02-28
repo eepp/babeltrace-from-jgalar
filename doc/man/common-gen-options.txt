@@ -1,0 +1,11 @@
+nlopt:-d, nlopt:--debug::
+    Turn the debugging mode on.
+
+nlopt:-v, nlopt:--verbose::
+    Turn the verbose mode on.
+
+nlopt:-h, nlopt:--help::
+    Show general help and quit.
+
+nlopt:-V, nlopt:--version::
+    Show version and quit.

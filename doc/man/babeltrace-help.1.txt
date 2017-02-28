@@ -1,0 +1,103 @@
+babeltrace-help(1)
+==================
+:manpagetype: command
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-help - Get help for a Babeltrace plugin or component class
+
+
+SYNOPSIS
+--------
+[verse]
+*babeltrace help* ['GENERAL OPTIONS'] [opt:--omit-home-plugin-path]
+                [opt:--omit-system-plugin-path]
+                [opt:--plugin-path='PATH'[:__PATH__]...]
+                ('PLUGIN' | (opt:--source | opt:--filter | opt:--sink)='PLUGIN.COMPCLS')
+
+
+DESCRIPTION
+-----------
+The `help` command prints the details and help text of either a plugin
+(and all its component classes) or a specific plugin's component class.
+
+.Get help for a plugin and all its component classes.
+====
+[role="term"]
+----
+babeltrace help my-plugin
+----
+====
+
+.Get help for a specific plugin's source component class.
+====
+[role="term"]
+----
+babeltrace help --source=my-plugin.my-source
+----
+====
+
+.Get help for a specific plugin's sink component class.
+====
+[role="term"]
+----
+babeltrace help --sink=my-plugin.my-sink
+----
+====
+
+
+include::common-cmd-plugin-path.txt[]
+
+
+OPTIONS
+-------
+General options
+~~~~~~~~~~~~~~~
+include::common-gen-options.txt[]
+
+
+Component class specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+One of:
+
+opt:--filter='PLUGIN.COMPCLS'::
+    Get help for the filter component class 'COMPCLS' found in the
+    plugin 'PLUGIN'.
+
+opt:-o 'PLUGIN.COMPCLS', opt:--sink='PLUGIN.COMPCLS'::
+    Get help for the sink component class 'COMPCLS' found in the
+    plugin 'PLUGIN'.
+
+opt:-i 'PLUGIN.COMPCLS', opt:--source='PLUGIN.COMPCLS'::
+    Get help for the source component class 'COMPCLS' found in the
+    plugin 'PLUGIN'.
+
+
+Plugin path
+~~~~~~~~~~~
+opt:--omit-home-plugin-path::
+    Do not search for plugins in `$HOME/.local/lib/babeltrace/plugins`.
+
+opt:--omit-system-plugin-path::
+    Do not search for plugins in +{system_plugin_path}+.
+
+opt:--plugin-path='PATH'[:__PATH__]...::
+    Add 'PATH' to the list of paths in which dynamic plugins can be
+    found.
+
+
+Command information
+~~~~~~~~~~~~~~~~~~~
+opt:-h, opt:--help::
+    Show command help and quit.
+
+
+include::common-cmd-footer.txt[]
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-list-plugins(1)

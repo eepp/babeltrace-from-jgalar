@@ -1,0 +1,54 @@
+babeltrace-plugin-utils(7)
+==========================
+:manpagetype: plugin
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-utils - Babeltrace's utility plugin
+
+
+DESCRIPTION
+-----------
+The Babeltrace `utils` plugin contains common, generic utility component
+classes which you can use in any conversion graph.
+
+
+COMPONENT CLASSES
+-----------------
+`utils.dummy` *sink*::
+    Receives the events from all its connections and discards them (does
+    absolutely nothing with them).
++
+See man:babeltrace-plugin-sink-utils.dummy(7).
+
+`utils.muxer` *filter*::
+    Multiplexes the events received on its multiple input connections by
+    time to its single output connection.
++
+See man:babeltrace-plugin-filter-utils.muxer(7).
+
+`utils.trimmer` *filter*::
+    Discards all the received events with a timestamp less than a given
+    beginning timestamp and greater than a given end timestamp,
+    effectively ``cutting'' the traces.
++
+See man:babeltrace-plugin-filter-utils.trimmer(7).
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Jérémie Galarneau, Philippe Proulx.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-filter-utils.muxer(7),
+man:babeltrace-plugin-filter-utils.trimmer(7),
+man:babeltrace-plugin-sink-utils.dummy(7)
