@@ -1,0 +1,139 @@
+babeltrace-query(1)
+===================
+:manpagetype: command
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-query - Query objects from component classes
+
+
+SYNOPSIS
+--------
+[verse]
+*babeltrace query* ['GENERAL OPTIONS'] [opt:--omit-home-plugin-path]
+                 [opt:--omit-system-plugin-path]
+                 [opt:--plugin-path='PATH'[:__PATH__]...]
+                 (opt:--source | opt:--filter | opt:--sink)='PLUGIN.COMPCLS'
+                 [opt:--params='PARAMS'] [opt:--raw] 'OBJECT'
+
+
+DESCRIPTION
+-----------
+The `query` command queries the object named 'OBJECT' from the
+component class 'COMPCLS' of the selected type found in the Babeltrace
+plugin 'PLUGIN' and prints the results.
+
+The exact object names, mandatory and optional parameters that a given
+component class expects are described in its documentation.
+man:babeltrace-help(1) can generally provide this information.
+
+You can use the opt:--params='PARAMS' option to pass parameters to the
+component class's query function. See <<params-fmt,Parameters format>>
+for the exact format of 'PARAMS'.
+
+By default, the `query` command tries to use the pretty formatting
+query interface of the selected component class to print the results.
+If this fails with 'OBJECT', then the command tries the raw query
+interface. You can force the command to use the raw query interface
+with the opt:--raw option. The output of the `query` command when it
+uses the raw query interface looks like YAML, although it is not
+YAML-compliant as such.
+
+.Query the sessions of the LTTng-live source component class.
+====
+[role="term"]
+----
+babeltrace query --source=ctf.lttng-live sessions \
+                 --params='url="net://my-host/target-host"'
+----
+====
+
+.Query the metadata text of a CTF trace located on the local file system.
+====
+[role="term"]
+----
+babeltrace query --source=ctf.fs metadata \
+                 --params='path="/path/to/trace"'
+----
+====
+
+.Query some object from a sink component class using the raw interface.
+====
+[role="term"]
+----
+babeltrace query --raw --sink=my-plugin.my-sink some-object
+----
+====
+
+
+include::common-cmd-params-format.txt[]
+
+
+include::common-cmd-plugin-path.txt[]
+
+
+OPTIONS
+-------
+General options
+~~~~~~~~~~~~~~~
+include::common-gen-options.txt[]
+
+
+Component class specification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+One of:
+
+opt:--filter='PLUGIN.COMPCLS'::
+    Query objects from the filter component class 'COMPCLS' found in the
+    plugin 'PLUGIN'.
+
+opt:-o 'PLUGIN.COMPCLS', opt:--sink='PLUGIN.COMPCLS'::
+    Query objects from the sink component class 'COMPCLS' found in the
+    plugin 'PLUGIN'.
+
+opt:-i 'PLUGIN.COMPCLS', opt:--source='PLUGIN.COMPCLS'::
+    Query objects from the source component class 'COMPCLS' found in the
+    plugin 'PLUGIN'.
+
+
+Query parameters
+~~~~~~~~~~~~~~~~
+opt:-p 'PARAMS', opt:--params='PARAMS'::
+    Set the query parameters to 'PARAMS'. See <<params-fmt,Parameters
+    format>> for the exact format of 'PARAMS'.
+
+
+Display
+~~~~~~~
+opt:--raw::
+    Use the raw query interface instead of the pretty formatting
+    query interface.
+
+
+Plugin path
+~~~~~~~~~~~
+opt:--omit-home-plugin-path::
+    Do not search for plugins in `$HOME/.local/lib/babeltrace/plugins`.
+
+opt:--omit-system-plugin-path::
+    Do not search for plugins in +{system_plugin_path}+.
+
+opt:--plugin-path='PATH'[:__PATH__]...::
+    Add 'PATH' to the list of paths in which dynamic plugins can be
+    found.
+
+
+Command information
+~~~~~~~~~~~~~~~~~~~
+opt:-h, opt:--help::
+    Show command help and quit.
+
+
+include::common-cmd-footer.txt[]
+
+
+SEE ALSO
+--------
+man:babeltrace(1)

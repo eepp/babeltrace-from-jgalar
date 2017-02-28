@@ -1,0 +1,40 @@
+babeltrace-plugin-text(7)
+=========================
+:manpagetype: plugin
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-text - Babeltrace's text output plugin
+
+
+DESCRIPTION
+-----------
+The Babeltrace `text` plugin contains the `text` sink component class. A
+`text.text` sink component writes a custom textual representation of the
+events it receives to the console or to a file.
+
+
+COMPONENT CLASSES
+-----------------
+`text.text` *sink*::
+    Writes a custom textual representation of the events it receives
+    to the console or to a file.
++
+See man:babeltrace-plugin-sink-text.text(7).
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Mathieu Desnoyers.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-sink-text.text(7)

@@ -1,0 +1,40 @@
+babeltrace-plugin-lttng-utils(7)
+================================
+:manpagetype: plugin
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-lttng-utils - Babeltrace's LTTng utilities plugin
+
+
+DESCRIPTION
+-----------
+The Babeltrace `lttng-utils` plugin contains utilities that apply to
+LTTng traces. You can read LTTng traces with the `ctf.fs` and
+`ctf.lttng-live` source components (see man:babeltrace-plugin-ctf(7)).
+
+
+COMPONENT CLASSES
+-----------------
+`lttng-utils.debug-info` *filter*::
+    Receives the events from its input connection and creates new
+    events with additionnal debugging information.
++
+See man:babeltrace-plugin-filter-lttng-utils.debug-info(7).
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Jérémie Galarneau, Philippe Proulx.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-filter-lttng-utils.debug-info(7)

@@ -1,4 +1,4 @@
-SUBDIRS = bindings images
+SUBDIRS = bindings images man
 
 if ENABLE_API_DOC
 SUBDIRS += api

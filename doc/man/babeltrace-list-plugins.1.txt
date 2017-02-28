@@ -1,0 +1,61 @@
+babeltrace-list-plugins(1)
+==========================
+:manpagetype: command
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-list-plugins - List Babeltrace plugins and their properties
+
+
+SYNOPSIS
+--------
+[verse]
+*babeltrace list-plugins* ['GENERAL OPTIONS'] [opt:--omit-home-plugin-path]
+                        [opt:--omit-system-plugin-path]
+                        [opt:--plugin-path='PATH'[:__PATH__]...]
+
+
+DESCRIPTION
+-----------
+The `list-plugins` command prints a list of available Babeltrace
+plugins along with their component classes and their properties.
+
+
+include::common-cmd-plugin-path.txt[]
+
+
+OPTIONS
+-------
+General options
+~~~~~~~~~~~~~~~
+include::common-gen-options.txt[]
+
+
+Plugin path
+~~~~~~~~~~~
+opt:--omit-home-plugin-path::
+    Do not search for plugins in `$HOME/.local/lib/babeltrace/plugins`.
+
+opt:--omit-system-plugin-path::
+    Do not search for plugins in +{system_plugin_path}+.
+
+opt:--plugin-path='PATH'[:__PATH__]...::
+    Add 'PATH' to the list of paths in which dynamic plugins can be
+    found.
+
+
+Command information
+~~~~~~~~~~~~~~~~~~~
+opt:-h, opt:--help::
+    Show command help and quit.
+
+
+include::common-cmd-footer.txt[]
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-help(1),

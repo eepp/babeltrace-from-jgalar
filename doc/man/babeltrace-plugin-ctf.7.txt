@@ -1,0 +1,52 @@
+babeltrace-plugin-ctf(7)
+========================
+:manpagetype: plugin
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-ctf - Babeltrace's CTF plugin
+
+
+DESCRIPTION
+-----------
+The Babeltrace `ctf` plugin contains component classes which can read
+and write the http://diamon.org/ctf/[Common Trace Format].
+
+
+COMPONENT CLASSES
+-----------------
+`ctf.fs` *sink*::
+    Writes the received events as a CTF trace on the file system.
++
+See man:babeltrace-plugin-sink-ctf.fs(7).
+
+`ctf.fs` *source*::
+    Opens one or more CTF traces on the local file system and emits
+    their events in order.
++
+See man:babeltrace-plugin-source-ctf.fs(7).
+
+`ctf.lttng-live` *source*::
+    Connects to an http://lttng.org/[LTTng] relay daemon and emits
+    the received CTF events.
++
+See man:babeltrace-plugin-source-ctf.lttng-live(7).
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Julien Desfossez, Mathieu Desnoyers, Jérémie Galarneau, Philippe Proulx.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-source-ctf.fs(7),
+man:babeltrace-plugin-sink-ctf.fs(7),
+man:babeltrace-plugin-source-ctf.lttng-live(7)

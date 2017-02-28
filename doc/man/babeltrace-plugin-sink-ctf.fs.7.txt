@@ -1,0 +1,111 @@
+babeltrace-plugin-sink-ctf.fs(7)
+================================
+:manpagetype: component class
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-sink-ctf.fs - Babeltrace's CTF to file system
+sink component class
+
+
+DESCRIPTION
+-----------
+The Babeltrace `ctf.fs` sink component class, member of the
+man:babeltrace-plugin-ctf(7) plugin, once instantiated, writes the
+events it receives in one or more CTF traces on the local file system.
+
+----
+        +-------------+ .--> CTF trace
+... --->| ctf.fs sink |-:
+        +-------------+ '--> CTF trace
+----
+
+A `ctf.fs` sink component uses the trace names of the received events,
+when possible, to try to reconstitute the original trace hierarchy on
+the file system. For example, given the following paths handled by
+different source components in the conversion graph:
+
+----
+/path/
+    to-some/
+        dir/
+            trace1/
+                metadata
+                ...
+            my-traces/
+                best-trace/
+                    metadata
+                    ...
+                a-log.txt
+            trace2/
+                metadata
+                ...
+----
+
+If the received events are attached to traces having the following
+names:
+
+----
+/path/to-some/dir/trace1
+/path/to-some/dir/my-traces/best-trace
+/path/to-some/dir/my-traces/a-log.txt
+/path/to-some/dir/trace2
+----
+
+A `ctf.fs` sink component with the param:path parameter set to `/output`
+would write the following hierarchy of CTF traces:
+
+----
+/output/
+    path/
+        to-some/
+            dir/
+                trace1/
+                    metadata
+                    ...
+                my-traces/
+                    best-trace/
+                        metadata
+                        ...
+                    a-log/
+                        metadata
+                        ...
+                trace2/
+                    metadata
+                    ...
+----
+
+
+INITIALIZATION PARAMETERS
+-------------------------
+The following parameters are optional unless indicated otherwise.
+
+param:path='PATH' (string, mandatory)::
+    Path to the root directory of the trace hierarchy to write.
+
+
+PORTS
+-----
+A `ctf.fs` sink component only has a default input port.
+
+
+QUERY OBJECTS
+-------------
+This component class has no objects to query.
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Julien Desfossez.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-ctf(7)

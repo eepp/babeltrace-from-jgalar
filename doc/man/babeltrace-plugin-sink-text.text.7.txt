@@ -1,0 +1,148 @@
+babeltrace-plugin-sink-text.text(7)
+===================================
+:manpagetype: component class
+:revdate: 28 February 2017
+
+
+NAME
+----
+babeltrace-plugin-sink-text.text - Babeltrace's text output component class
+
+
+DESCRIPTION
+-----------
+The Babeltrace `text.text` sink component class, member of the
+man:babeltrace-plugin-text(7) plugin, once instantiated, writes a custom
+textual representation of the events it receives to the console or to a
+file.
+
+----
+        +----------------+
+... --->| text.text sink |---> standard output or file
+        +----------------+
+----
+
+By default, a `text.text` sink component writes its text to the
+standard output. You can use the param:output-path parameter for the
+component to write to a file instead.
+
+If you don't use the param:output-path parameter and the application's
+standard output is connected to a color-capable terminal, the component
+emits console color codes to enhance the output for human reading. You
+can use the param:color parameter to control the color behaviour.
+
+
+INITIALIZATION PARAMETERS
+-------------------------
+The following parameters are optional unless indicated otherwise.
+
+param:clock-cycles=`yes` (boolean)::
+    Write timestamps in clock cycles instead of hours, minutes,
+    seconds, and nanoseconds.
+
+param:clock-date=`yes` (boolean)::
+    Write timestamp dates.
+
+param:clock-gmt=`yes` (boolean)::
+    Write timestamps in the GMT time zone instead of the local
+    time zone.
+
+param:clock-seconds=`yes` (boolean)::
+    Write timestamps in seconds instead of hours, minutes,
+    seconds, and nanoseconds.
+
+param:color=(`never` | `auto` | `always`) (string)::
+    Set the color output condition, one of:
++
+--
+`never`::
+    Never emit console color codes.
+
+`auto` (default)::
+    Only emit console color codes when the standard output is connected
+    to a color-capable terminal.
+
+`always`::
+    Always emit console color codes.
+--
+
+param:field-default=(`show` | `hide`) (string)::
+    By default, show or hide all the fields. This sets the default value
+    of all the parameters which start with `field-`.
+
+param:field-emf=(`yes` | `no`) (boolean)::
+    Show or hide the event's Eclipse Modeling Framework URI field.
+
+param:field-loglevel=(`yes` | `no`) (boolean)::
+    Show or hide the event's logging level field.
+
+param:field-trace=(`yes` | `no`) (boolean)::
+    Show or hide the trace name field.
+
+param:field-trace:domain=(`yes` | `no`) (boolean)::
+    Show or hide the tracing domain field.
+
+param:field-trace:hostname=(`yes` | `no`) (boolean)::
+    Show or hide the hostname field.
+
+param:field-trace:procname=(`yes` | `no`) (boolean)::
+    Show or hide the process name field.
+
+param:field-trace:vpid=(`yes` | `no`) (boolean)::
+    Show or hide the virtual process ID field.
+
+param:name-context=(`yes` | `no`) (boolean)::
+    Show or hide the field names in the context scopes.
+
+param:name-default=(`show` | `hide`) (string)::
+    By default, show or hide all the names. This sets the
+    default value of all the parameters which start with `name-`.
+
+param:name-header=(`yes` | `no`) (boolean)::
+    Show or hide the field names in the header scopes.
+
+param:name-payload=(`yes` | `no`) (boolean)::
+    Show or hide the field names in the event payload scopes.
+
+param:name-scope=(`yes` | `no`) (boolean)::
+    Show or hide the scope names.
+
+param:no-delta=`yes` (boolean)::
+    Do not print the time delta between consecutive lines.
+
+param:output-path='PATH' (string)::
+    Write the text output to the file 'PATH' instead of the standard
+    output.
+
+param:verbose=`yes` (boolean)::
+    Turn the verbose mode on.
+
+
+PORTS
+-----
+A `text.text` sink component only has a default input port.
+
+
+QUERY OBJECTS
+-------------
+This component class has no objects to query.
+
+
+LIMITATIONS
+-----------
+A `text.text` sink component supports a single connection.
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Mathieu Desnoyers.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-text(7)

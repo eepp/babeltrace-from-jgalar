@@ -3174,7 +3174,6 @@ void print_convert_usage(FILE *fp)
 	fprintf(fp, "                                    (see the suggested format of BEGIN below)\n");
 	fprintf(fp, "  -c, --connect=CONNECTION          Connect two component instances (see the\n");
 	fprintf(fp, "                                    expected format of CONNECTION below)\n");
-	fprintf(fp, "  -d, --debug                       Enable debug mode\n");
 	fprintf(fp, "      --end=END                     Set the `end` parameter of the latest\n");
 	fprintf(fp, "                                    source component instance to END\n");
 	fprintf(fp, "                                    (see the suggested format of BEGIN below)\n");
@@ -3206,7 +3205,6 @@ void print_convert_usage(FILE *fp)
 	fprintf(fp, "      --timerange=TIMERANGE         Set time range to TIMERANGE: BEGIN,END or\n");
 	fprintf(fp, "                                    [BEGIN,END] (literally `[` and `]`)\n");
 	fprintf(fp, "                                    (suggested format of BEGIN/END below)\n");
-	fprintf(fp, "  -v, --verbose                     Enable verbose output\n");
 	fprintf(fp, "  -h  --help                        Show this help and quit\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "See `babeltrace --help` for the list of general options.\n");

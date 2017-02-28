@@ -1,0 +1,4 @@
+[attributes]
+# default values
+system_plugin_path="@LIBDIR@/babeltrace/plugins"
+babeltrace_version="@PACKAGE_VERSION@"
