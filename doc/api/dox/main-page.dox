@@ -4,31 +4,41 @@
 Welcome to the
 <strong><em>Babeltrace \btversion C API</em></strong> documentation!
 
-Since 2011, the open source <a
-href="http://diamon.org/babeltrace">Babeltrace</a> project has grabbed a
-leading position in the specific area of
-<a href="https://en.wikipedia.org/wiki/Tracing_(software)">trace</a>
-format conversion and CTF decoding. That being said, starting from
+In its inception, the Babeltrace project's objective was to provide the
+reference implementation of a
+<a href="http://diamon.org/ctf">Common Trace Format</a> reader and
+allow the conversion of traces to text. That being said, starting from
 Babeltrace&nbsp;2, the tool and library can do much more than that.
 Thanks to its plugin- and graph-oriented design, you can use the
 Babeltrace&nbsp;2 library to selectively remove, augment, or transform
-events, and to perform custom analyses with a trace format-agnostic
-programming interface.
+events from multiple sources, and to perform custom analyses with a
+trace format-agnostic programming interface.
 
-@note
-This C API is completely wrapped by a thoroughly tested Python&nbsp;3
-package. However, there is currently no available user documentation
-for this package.
+As a reminder, the Babeltrace project is composed of:
 
+- A library, libbabeltrace, and a set of include files to use the
+  library's exported functions in C or C++.
+
+- A Python 3 package which provides a Pythonic interface to
+  libbabeltrace. Note that no documentation is currently available for
+  the \c bt2 Python package.
+
+- A command-line tool,
+  <a href="TODO"><code>babeltrace</code></a>, which you can use to,
+  amongst other things, convert, filter, and trim traces.
+
+This documentation is about the functions of libbabeltrace. We often
+use the term _Babeltrace_ interchangeably with _libbabeltrace_ in the
+pages of this documentation.
 
 @section who Who is this documentation for?
 
-This documentation is aimed at C/C++ programmers who need to do one or
-more of the following tasks:
+This documentation is aimed at C/C++ programmers who need to perform one
+or more of the following tasks:
 
 -# Write a Babeltrace plugin to provide a source of events, a custom
    way to filter or transform events, or to do something else with
-   events, like write them to a file with a specific format.
+   events, like write them to a file in a specific format.
 
 -# Load existing Babeltrace plugins and connect what they provide in a
    specific way to achieve a goal.
@@ -37,8 +47,8 @@ more of the following tasks:
 
 @section intro Introduction
 
-With the Babeltrace library, you can create conversion graphs. A
-conversion graph contains connected components that pass on events and
+With the Babeltrace library, you can create processing graphs. A
+processing graph contains connected components that pass on events and
 other notifications from one to the other to accomplish some work. There
 are three types of components:
 
@@ -52,12 +62,12 @@ are three types of components:
   does something useful with the events, but not interesting for a
   following component, like write them to trace files.
 
-Here's an example of a Babeltrace conversion graph built by the
+Here's an example of a Babeltrace processing graph built by the
 \c babeltrace command-line tool:
 
 @image html babeltrace-cli.png
 
-It would be unfair not to compare the concept of a Babeltrace conversion
+It would be unfair not to compare the concept of a Babeltrace processing
 graph to other popular <a href="https://en.wikipedia.org/wiki/Filter_graph">filter
 graphs</a> like the ones of
 <a href="https://ffmpeg.org/">FFmpeg</a>,
@@ -68,10 +78,16 @@ Babeltrace and all those examples make use of filter graphs for the same
 reason: reuse the graph nodes. Instead of hardcoding a specialized
 MPEG-2 to H.263 video codec converter, developers create an MPEG-2
 decoding node which produces raw video frames, an H.263 encoding node
-which consumes raw video frames, and we connect them together. Then we
-can plug this same MPEG-2 decoding node to a H.264 or VP9 encoding node.
-This great modularity places a world of conversion possibilities at your
-fingertips without having to write software at all.
+which consumes raw video frames, and we connect them together:
+
+@image html multimedia-filter-graph-hardcoded-vs-modular.png
+
+Then we can plug this same MPEG-2 decoding node to an H.264 or VP9
+encoding node. This great modularity places a world of conversion and
+processing possibilities at your fingertips without having to write
+software at all:
+
+@image html multimedia-filter-graph-multiple-outputs.png
 
 But enough with the multimedia analogy. In the Babeltrace world, the
 graph nodes, or \em components, do not send and receive video frames, but
@@ -83,7 +99,7 @@ functions that let you build your own <em>component class</em>. Here,
 the term \em class has the same meaning as in object-oriented
 programming: a component class is a set of user-defined methods. You can
 use an API function to instantiate a component class as a component
-instance, ready to be connected to other components within a conversion
+instance, ready to be connected to other components within a processing
 graph.
 
 While you can certainly create your own component classes, instantiate
@@ -93,6 +109,11 @@ plugin is a set of user-defined component classes. With the C API, you
 can load existing plugins and create fresh ones. Concretly, you build a
 plugin as a shared object.
 
+<hr>
+<hr>
+<hr>
+<hr>
+<hr>
 
 The goal of using this API is to create user
 \link btplugins <em>plugins</em>\endlink.
