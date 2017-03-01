@@ -35,7 +35,7 @@ compiler.
 
 The new events contain the exact same fields as the original ones, and,
 when possible, a new event context's structure field (besides the `ip`
-field) named {defdebuginfoname} by default. This structure field can contain
+field) named {defdebuginfoname} by default. This structure contains
 the following fields:
 
 `bin` (string field)::
@@ -59,7 +59,9 @@ Example: `load_user_config+0x194`.
 +
 Example: `user-config.c:1025`.
 
-All three fields TODO MISSING?
+Any of those the previous fields can be an empty string if the
+debugging information was not available for the analyzed original
+LTTng event.
 
 When the filter component creates a new event with debugging
 information, the original event is discarded. If the component receives
