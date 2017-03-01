@@ -4,30 +4,105 @@
 Welcome to the
 <strong><em>Babeltrace \btversion C API</em></strong> documentation!
 
-<a href="http://diamon.org/babeltrace">Babeltrace</a> is an open
-source converter of
+Since 2011, the open source <a
+href="http://diamon.org/babeltrace">Babeltrace</a> project has grabbed a
+leading position in the specific area of
 <a href="https://en.wikipedia.org/wiki/Tracing_(software)">trace</a>
-formats. You can use its C API to
-write custom source, sink, and filter
-\link btcomponents component classes\endlink which you can package as user
-\link btplugins plugins\endlink.
+format conversion and CTF decoding. That being said, starting from
+Babeltrace&nbsp;2, the tool and library can do much more than that.
+Thanks to its plugin- and graph-oriented design, you can use the
+Babeltrace&nbsp;2 library to selectively remove, augment, or transform
+events, and to perform custom analyses with a trace format-agnostic
+programming interface.
+
+@note
+This C API is completely wrapped by a thoroughly tested Python&nbsp;3
+package. However, there is currently no available user documentation
+for this package.
 
 
-@section intro What's this API for?
+@section who Who is this documentation for?
+
+This documentation is aimed at C/C++ programmers who need to do one or
+more of the following tasks:
+
+-# Write a Babeltrace plugin to provide a source of events, a custom
+   way to filter or transform events, or to do something else with
+   events, like write them to a file with a specific format.
+
+-# Load existing Babeltrace plugins and connect what they provide in a
+   specific way to achieve a goal.
+
+-# An hybrid of #1 and #2.
+
+@section intro Introduction
+
+With the Babeltrace library, you can create conversion graphs. A
+conversion graph contains connected components that pass on events and
+other notifications from one to the other to accomplish some work. There
+are three types of components:
+
+- A \b source component produces trace events, usually getting them
+  from one or more trace files.
+
+- A \b filter component can manipulate the events it receives and move
+  them to its output or produce new ones.
+
+- A \b sink component consumes trace events. A sink component usually
+  does something useful with the events, but not interesting for a
+  following component, like write them to trace files.
+
+Here's an example of a Babeltrace conversion graph built by the
+\c babeltrace command-line tool:
+
+@image html babeltrace-cli.png
+
+It would be unfair not to compare the concept of a Babeltrace conversion
+graph to other popular <a href="https://en.wikipedia.org/wiki/Filter_graph">filter
+graphs</a> like the ones of
+<a href="https://ffmpeg.org/">FFmpeg</a>,
+<a href="https://gstreamer.freedesktop.org/">GStreamer</a>,
+and
+<a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd375454(v=vs.85).aspx">Microsoft DirectShow</a>.
+Babeltrace and all those examples make use of filter graphs for the same
+reason: reuse the graph nodes. Instead of hardcoding a specialized
+MPEG-2 to H.263 video codec converter, developers create an MPEG-2
+decoding node which produces raw video frames, an H.263 encoding node
+which consumes raw video frames, and we connect them together. Then we
+can plug this same MPEG-2 decoding node to a H.264 or VP9 encoding node.
+This great modularity places a world of conversion possibilities at your
+fingertips without having to write software at all.
+
+But enough with the multimedia analogy. In the Babeltrace world, the
+graph nodes, or \em components, do not send and receive video frames, but
+\b notifications. One type of notification is the trace event
+notification.
+
+How do you make your own Babeltrace component? The C API has a few
+functions that let you build your own <em>component class</em>. Here,
+the term \em class has the same meaning as in object-oriented
+programming: a component class is a set of user-defined methods. You can
+use an API function to instantiate a component class as a component
+instance, ready to be connected to other components within a conversion
+graph.
+
+While you can certainly create your own component classes, instantiate
+them as components, and connect the components within a graph,
+Babeltrace has a standard way to package them: \b plugins. A Babeltrace
+plugin is a set of user-defined component classes. With the C API, you
+can load existing plugins and create fresh ones. Concretly, you build a
+plugin as a shared object.
+
 
 The goal of using this API is to create user
 \link btplugins <em>plugins</em>\endlink.
+
 
 A Babeltrace plugin contains one or more
 \link btcomponents <em>component classes</em>\endlink.
 
 A component class is either:
 
-- A \b source component class: creates producers of trace
-  events.
-- A \b sink component class: creates consumers of trace events.
-- A \b filter component class: creates components which are both a
-  producers and consumers of trace events.
 
 A program or library can instantiate as many concrete \em components as
 needed from a single component class. At component instantiation time,
