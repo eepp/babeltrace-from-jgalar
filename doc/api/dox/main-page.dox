@@ -4,47 +4,119 @@
 Welcome to the
 <strong><em>Babeltrace \btversion C API</em></strong> documentation!
 
-<a href="http://diamon.org/babeltrace">Babeltrace</a> is an open
-source converter of
-<a href="https://en.wikipedia.org/wiki/Tracing_(software)">trace</a>
-formats. You can use its C API to
-write custom source, sink, and filter
-\link btcomponents component classes\endlink which you can package as user
-\link btplugins plugins\endlink.
+In its inception, the Babeltrace project's objective was to provide the
+reference implementation of a
+<a href="http://diamon.org/ctf">Common Trace Format</a> reader and to
+allow the conversion of traces to text. That being said, starting from
+Babeltrace&nbsp;2, the tool and library can do much more than that.
+Thanks to its plugin- and graph-oriented design, you can use the
+Babeltrace library to selectively remove, augment, or transform
+events from multiple sources, and to perform custom analyses with a
+trace format-agnostic programming interface.
 
+As a reminder, the Babeltrace project is composed of:
 
-@section intro What's this API for?
+- A library, libbabeltrace, and a set of include files to use the
+  library's exported functions in C or C++.
 
-The goal of using this API is to create user
-\link btplugins <em>plugins</em>\endlink.
+- A Python 3 package which provides a Pythonic interface to
+  libbabeltrace. Note that no documentation is currently available for
+  the \c bt2 Python package.
 
-A Babeltrace plugin contains one or more
-\link btcomponents <em>component classes</em>\endlink.
+- A command-line tool,
+  <a href="TODO"><code>babeltrace</code></a>, which you can use to,
+  amongst other things, convert, filter, and trim traces.
 
-A component class is either:
+This documentation is about the functions of libbabeltrace. We often
+use the term _Babeltrace_ interchangeably with _libbabeltrace_ in the
+pages of this documentation.
 
-- A \b source component class: creates producers of trace
-  events.
-- A \b sink component class: creates consumers of trace events.
-- A \b filter component class: creates components which are both a
-  producers and consumers of trace events.
+@section who Who is this documentation for?
 
-A program or library can instantiate as many concrete \em components as
-needed from a single component class. At component instantiation time,
-the component class's registered user initialization function is called
-with custom user parameters.
+This documentation is aimed at C/C++ programmers who need to perform one
+or more of the following tasks:
 
-Plugins, as of Babeltrace \btversion, are built as dynamic libraries
-(<code>.so</code> or <code>.dll</code> files) and loaded by the \c
-babeltrace converter program. You can also get plugin objects from a
-shared object file or from a directory containing shared object files
-thanks to the C API. The converter program is responsible for passing
-notifications and events from source components to filter components, if
-any, and from filter components to sink components.
+-# Write a Babeltrace plugin to provide a source of events, a custom
+   way to filter or transform events, or to do something else with
+   events, like write them to a file in a specific format.
+
+-# Load existing Babeltrace plugins and connect what they provide in a
+   specific way to achieve a goal.
+
+-# An hybrid of #1 and #2.
+
+@section intro Introduction
+
+<h2>Graph, components, and plugins</h2>
+
+With the Babeltrace library, you can create processing graphs. A
+processing graph contains connected components that pass on events and
+other notifications from one to the other to accomplish some work. There
+are three types of components:
+
+- A \b source component produces trace events, usually getting them
+  from one or more trace files.
+
+- A \b filter component can manipulate the events it receives and move
+  them to its output or produce new ones.
+
+- A \b sink component consumes trace events. A sink component usually
+  does something useful with the events, but not interesting for a
+  following component, like write them to trace files.
+
+Here's an example of a Babeltrace processing graph built by the
+\c babeltrace command-line tool:
 
 @image html babeltrace-cli.png
 
-@section mainpagectfir CTF IR
+It would be unfair not to compare the concept of a Babeltrace processing
+graph to other popular <a href="https://en.wikipedia.org/wiki/Filter_graph">filter
+graphs</a> like the ones of
+<a href="https://ffmpeg.org/">FFmpeg</a>,
+<a href="https://gstreamer.freedesktop.org/">GStreamer</a>,
+and
+<a href="https://msdn.microsoft.com/en-us/library/windows/desktop/dd375454(v=vs.85).aspx">Microsoft DirectShow</a>.
+Babeltrace and all those examples make use of filter graphs for the same
+reason: reuse the graph nodes. Instead of hardcoding a specialized
+MPEG-2 to H.263 video codec converter, developers create an MPEG-2
+decoding node which produces raw video frames, an H.263 encoding node
+which consumes raw video frames, and we connect them together:
+
+@image html multimedia-filter-graph-hardcoded-vs-modular.png
+
+Then we can plug this same MPEG-2 decoding node to an H.264 or VP9
+encoding node. This great modularity places a world of conversion and
+processing possibilities at your fingertips without having to write
+software at all:
+
+@image html multimedia-filter-graph-multiple-outputs.png
+
+But enough with the multimedia analogy. In the Babeltrace world, the
+graph nodes, or \em components, do not send and receive video frames, but
+\b notifications. One type of notification is the trace event
+notification.
+
+How do you make your own Babeltrace component? The C API has a few
+functions that let you build your own <em>component class</em>. Here,
+the term \em class has the same meaning as in object-oriented
+programming: a component class is a set of user-defined methods. You can
+use an API function to instantiate a component class as a component
+instance, ready to be connected to other components within a processing
+graph.
+
+While you can certainly create your own component classes, instantiate
+them as components, and connect the components within a graph,
+Babeltrace has a standard way to package them: \b plugins. A Babeltrace
+plugin is a set of user-defined component classes. With the C API, you
+can load existing plugins and create fresh ones. Concretly, you build a
+plugin as a shared object (<code>.so</code> or <code>.dll</code> files).
+
+See \ref writeplugin to learn how to write a Babeltrace plugin.
+
+See \ref buildagraph to learn how to build a Babeltrace graph and run
+it.
+
+<h2>CTF IR</h2>
 
 The internal representations of a trace, a stream, and an event follow
 the <a href="http://diamon.org/ctf">Common Trace Format</a> model.
@@ -53,7 +125,7 @@ Within the Babeltrace C API, this representation is called the
 \link ctfir CTF IR\endlink. CTF IR is flexible enough to represent
 almost any trace or logging format.
 
-The CTF IR model contains the following objects, amongst others:
+The CTF IR model contains the following main objects:
 
 - A \link ctfirfieldtypes field type\endlink is the type of concrete
   \link ctfirfields fields\endlink.
@@ -63,6 +135,10 @@ The CTF IR model contains the following objects, amongst others:
   they are signed, and so on. An integer field that you create out of an
   integer field type, however, only contains a raw integral value. You
   can create many fields from a single field type.
+
+- A \link ctfirclockclass clock class\endlink holds the common
+  properties of clock values that are instantiated in \link ctfirevent
+  events\endlink.
 
 - An \link ctfireventclass event class\endlink is the type of
   a concrete \link ctfirevent event\endlink.
@@ -80,43 +156,39 @@ The CTF IR model contains the following objects, amongst others:
   fields holding their values. <p> A stream class is the parent of one or
   more event classes.
 
+- A \link ctfirtrace trace\endlink describes a concrete trace.
 
-- A \link ctfirtraceclass trace class\endlink describes traces.
+  A trace class is the parent of one or more stream classes, and also
+  a key-value store named the \em environment, registered clock classes,
+  and the packet header field type.
 
-  A trace class is the parent of one or more stream classes.
-
-- A \link ctfirclockclass clock class\endlink holds the common
-  properties of clock values that are instantiated in \link ctfirevent
-  events\endlink.
-
-@section mainpagevalues Value objects
+<h2>Value objects</h2>
 
 Some parts of the Babeltrace API require typical, generic scalar values
-(boolean, integer, floating point number, string) organized in compound
+(boolean, integer, floating point number, string) contained in compound
 objects (array, map). This is similar to the model that
 <a href="http://json.org/">JSON</a> offers.
 
 For example, the environment of a
-\link ctfirtraceclass CTF IR trace class\endlink maps strings to strings
-or to integers, and the parameters passed to component instances take
-the form of a map.
+\link ctfirtrace CTF IR trace\endlink maps strings (keys) to string
+or to integer values, and the initialization parameters that you pass
+to bt_component_create() to instantiate a \link btcompcls component
+class\endlink take the form of a map.
 
-For this purpose, the API uses
-\link values value objects\endlink.
+For this purpose, the API uses \link values value objects\endlink.
 
-@section mainpageref Reference counting
+<h2>Reference counting</h2>
 
-All the <em>Babeltrace objects</em> have a
-<a href="https://en.wikipedia.org/wiki/Reference_counting">reference count</a>
-to make them shareable.
-When you use a Babeltrace object creation function (for example,
-bt_value_bool_create()), you get a new reference to the created
-object. When you add this object to another one, the latter takes its
-own reference using bt_get(), incrementing the shared object's reference
-count. When you are done with an object, you must call bt_put() to drop
-your reference, decrementing its reference count. When an object's
-reference count reaches 0, the object is considered \em destroyed and
-cannot be used anymore.
+All the <em>Babeltrace objects</em> have a <a
+href="https://en.wikipedia.org/wiki/Reference_counting">reference
+count</a> to make them shareable. When you use a Babeltrace object
+creation function (for example, bt_value_bool_create()), you get a new
+reference to the created object. When you add this object to another
+one, the latter takes its own reference using bt_get(), incrementing the
+shared object's reference count. When you are done with an object, you
+must call bt_put() to release your reference to the object, decrementing
+its reference count. When an object's reference count reaches 0, the
+object is considered \em destroyed and cannot be used anymore.
 
 See \ref refs for more details.
 
@@ -124,7 +196,7 @@ The postconditions of the functions and macros documented here indicate
 what you can expect from the reference counts of the Babeltrace objects
 passed as parameters to and returned from API functions.
 
-@section mainpagefreeze Frozen objects
+<h2>Frozen objects</h2>
 
 The Babeltrace library can \em freeze almost all of the Babeltrace
 objects. A frozen object is considered \em immutable, although you can

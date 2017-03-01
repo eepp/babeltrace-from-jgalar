@@ -1,7 +1,7 @@
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "Babeltrace C API"
 PROJECT_NUMBER         = @PACKAGE_VERSION@
-PROJECT_BRIEF          = "Trace converter with plugin support"
+PROJECT_BRIEF          = "Plugin- and graph-based trace processing library"
 CREATE_SUBDIRS         = NO
 ALLOW_UNICODE_NAMES    = NO
 OUTPUT_LANGUAGE        = English
@@ -149,9 +149,6 @@ INPUT                  = "@top_srcdir@/include/babeltrace/ctf-ir" \
                          "@srcdir@/dox/main-page.dox" \
                          "@srcdir@/dox/includes-build.dox" \
                          "@srcdir@/dox/write-plugin.dox" \
-                         "@srcdir@/dox/use-ctf-writer.dox" \
-                         "@srcdir@/dox/examples.dox" \
-                         "@srcdir@/dox/examples-ctfir.dox" \
                          "@srcdir@/dox/group-api-ref.dox" \
                          "@srcdir@/dox/group-ctf-ir.dox"
 INPUT_ENCODING         = UTF-8
