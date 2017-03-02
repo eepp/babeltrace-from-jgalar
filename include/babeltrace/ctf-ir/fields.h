@@ -824,7 +824,9 @@ different @fts, and which is described by a @structft.
 
 To set the value of a specific field of a structure field, you need to
 first get the field with bt_ctf_field_structure_get_field() or
-bt_ctf_field_structure_get_field_by_index().
+bt_ctf_field_structure_get_field_by_index(). If you already have an
+allocated value, you can assign it to a structure field of the same type
+with bt_ctf_field_structure_set_field().
 
 @sa ctfirstructfieldtype
 @sa ctfirfields
@@ -857,6 +859,27 @@ exist.
 */
 extern struct bt_ctf_field *bt_ctf_field_structure_get_field(
 		struct bt_ctf_field *struct_field, const char *name);
+
+/**
+@brief  Sets the value of the @field named \p name with the \p value
+
+@param[in] struct_field	Structure field of which to get the field
+			named \p name.
+@param[in] name		Name of the field to get from \p struct_field.
+@param[in] value	Value to assign the the field.
+@returns		0 on success, or -1 on error.
+
+@prenotnull{struct_field}
+@prenotnull{name}
+@prenotnull{value}
+@preisstructfield{struct_field}
+@postrefcountsame{struct_field}
+@postsuccessrefcountinc{value}
+
+@sa bt_ctf_field_structure_set_field(): Sets the value of a field.
+*/
+extern int bt_ctf_field_structure_set_field(struct bt_ctf_field *struct_field,
+		const char *name, struct bt_ctf_field *value);
 
 /**
 @brief  Returns the @field at index \p index in the @structfield
