@@ -28,6 +28,7 @@
 #include <pwd.h>
 #include <unistd.h>
 #include <assert.h>
+#include <ctype.h>
 #include <glib.h>
 #include <babeltrace/babeltrace-internal.h>
 #include <babeltrace/common-internal.h>
@@ -312,4 +313,154 @@ const char *bt_common_color_bg_light_gray(void)
 {
 	return bt_common_colors_supported() ?
 		BT_COMMON_COLOR_BG_LIGHT_GRAY : "";
+}
+
+BT_HIDDEN
+GString *bt_common_string_until(const char *input, const char *escapable_chars,
+		const char *end_chars, size_t *end_pos)
+{
+	GString *output = g_string_new(NULL);
+	const char *ch;
+	const char *es_char;
+	const char *end_char;
+
+	if (!output) {
+		goto error;
+	}
+
+	for (ch = input; *ch != '\0'; ch++) {
+		if (*ch == '\\') {
+			bool continue_loop = false;
+
+			if (ch[1] == '\0') {
+				/* `\` at the end of the string: append `\` */
+				g_string_append_c(output, *ch);
+				ch++;
+				goto set_end_pos;
+			}
+
+			for (es_char = escapable_chars; *es_char != '\0'; es_char++) {
+				if (ch[1] == *es_char) {
+					/*
+					 * `\` followed by an escapable
+					 * character: append the escaped
+					 * character only.
+					 */
+					g_string_append_c(output, ch[1]);
+					ch++;
+					continue_loop = true;
+					break;
+				}
+			}
+
+			if (continue_loop) {
+				continue;
+			}
+
+			/*
+			 * `\` followed by a non-escapable character:
+			 * append `\` and the character.
+			 */
+			g_string_append_c(output, *ch);
+			g_string_append_c(output, ch[1]);
+			ch++;
+			continue;
+		} else {
+			for (end_char = end_chars; *end_char != '\0'; end_char++) {
+				if (*ch == *end_char) {
+					/*
+					 * End character found:
+					 * terminate this loop.
+					 */
+					goto set_end_pos;
+				}
+			}
+
+			/* Normal character: append */
+			g_string_append_c(output, *ch);
+		}
+	}
+
+set_end_pos:
+	if (end_pos) {
+		*end_pos = ch - input;
+	}
+
+	goto end;
+
+error:
+	if (output) {
+		g_string_free(output, TRUE);
+	}
+
+end:
+	return output;
+}
+
+BT_HIDDEN
+GString *bt_common_shell_quote(const char *input)
+{
+	GString *output = g_string_new(NULL);
+	const char *ch;
+	bool no_quote = true;
+
+	if (!output) {
+		goto end;
+	}
+
+	if (strlen(input) == 0) {
+		g_string_assign(output, "''");
+		goto end;
+	}
+
+	for (ch = input; *ch != '\0'; ch++) {
+		const char c = *ch;
+
+		if (!g_ascii_isalpha(c) && !g_ascii_isdigit(c) && c != '_' &&
+				c != '@' && c != '%' && c != '+' && c != '=' &&
+				c != ':' && c != ',' && c != '.' && c != '/' &&
+				c != '-') {
+			no_quote = false;
+			break;
+		}
+	}
+
+	if (no_quote) {
+		g_string_assign(output, input);
+		goto end;
+	}
+
+	g_string_assign(output, "'");
+
+	for (ch = input; *ch != '\0'; ch++) {
+		if (*ch == '\'') {
+			g_string_append(output, "'\"'\"'");
+		} else {
+			g_string_append_c(output, *ch);
+		}
+	}
+
+	g_string_append_c(output, '\'');
+
+end:
+	return output;
+}
+
+BT_HIDDEN
+bool bt_common_string_is_printable(const char *input)
+{
+	const char *ch;
+	bool printable = true;
+	assert(input);
+
+	for (ch = input; *ch != '\0'; ch++) {
+		if (!isprint(*ch) && *ch != '\n' && *ch != '\r' &&
+				*ch != '\t' && *ch != '\v') {
+			printable = false;
+			goto end;
+		}
+	}
+
+end:
+	return printable;
 }

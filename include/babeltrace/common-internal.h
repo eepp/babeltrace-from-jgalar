@@ -91,4 +91,14 @@ const char *bt_common_color_bg_cyan(void);
 BT_HIDDEN
 const char *bt_common_color_bg_light_gray(void);
 
+BT_HIDDEN
+GString *bt_common_string_until(const char *input, const char *escapable_chars,
+                    const char *end_chars, size_t *end_pos);
+
+BT_HIDDEN
+GString *bt_common_shell_quote(const char *input);
+
+BT_HIDDEN
+bool bt_common_string_is_printable(const char *input);
+
 #endif /* BABELTRACE_COMMON_INTERNAL_H */
