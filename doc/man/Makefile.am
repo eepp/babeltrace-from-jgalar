@@ -11,13 +11,15 @@ MAN1_NAMES = \
 	babeltrace-convert \
 	babeltrace-help \
 	babeltrace-list-plugins \
-	babeltrace-query
+	babeltrace-query \
+	babeltrace-run
 MAN7_NAMES =
 MAN1_NO_ASCIIDOC_NAMES =
 MAN7_NO_ASCIIDOC_NAMES = \
 	babeltrace-plugin-ctf \
 	babeltrace-plugin-filter-lttng-utils.debug-info \
-	babeltrace-plugin-filter-utils.muxer \
+	babeltrace-plugin-filter-utils.mux \
+	babeltrace-plugin-filter-utils.tee \
 	babeltrace-plugin-filter-utils.trimmer \
 	babeltrace-plugin-lttng-utils \
 	babeltrace-plugin-sink-ctf.fs \

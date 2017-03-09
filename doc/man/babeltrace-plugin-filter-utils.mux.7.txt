@@ -1,0 +1,68 @@
+babeltrace-plugin-filter-utils.mux(7)
+=====================================
+:manpagetype: component class
+:revdate: 8 March 2017
+
+
+NAME
+----
+babeltrace-plugin-filter-utils.mux - Babeltrace's multiplexer utility
+filter component class
+
+
+DESCRIPTION
+-----------
+The Babeltrace `utils.mux` filter component class, member of the
+man:babeltrace-plugin-utils(7) plugin, once instantiated, multiplexes
+the notifications received on multiple input ports into a linear
+sequence of notifications ordered by time on its output connection.
+
+----
+        +-----------+
+        | utils.mux |
+... --->@   filter  |
+        |           @---> ...
+... --->@           |
+        |           |
+        +-----------+
+----
+
+The events and other notifications are untouched: the `utils.mux`
+filter component only sorts them.
+
+A `utils.mux` filter component's iterator signals the end of the
+iteration when all its input iterators are also done.
+
+
+INITIALIZATION PARAMETERS
+-------------------------
+The following parameters are optional unless indicated otherwise.
+
+IMPORTANT: TODO.
+
+
+PORTS
+-----
+A `utils.mux` filter component, immediately after its creation, has
+a single input port named `in0`. When you connect an upstream port
+to this port, a new port `in1` is created and free, and so on.
+
+
+QUERY OBJECTS
+-------------
+This component class has no objects to query.
+
+
+include::common-footer.txt[]
+
+
+AUTHORS
+-------
+Philippe Proulx.
+
+
+SEE ALSO
+--------
+man:babeltrace(1),
+man:babeltrace-convert(1),
+man:babeltrace-plugin-utils(7)
