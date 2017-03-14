@@ -11,11 +11,8 @@ MAN1_NAMES = \
 	babeltrace-convert \
 	babeltrace-help \
 	babeltrace-list-plugins \
-	babeltrace-query \
-	babeltrace-run
-MAN7_NAMES =
-MAN1_NO_ASCIIDOC_NAMES =
-MAN7_NO_ASCIIDOC_NAMES = \
+	babeltrace-query
+MAN7_NAMES = \
 	babeltrace-plugin-ctf \
 	babeltrace-plugin-filter-lttng-utils.debug-info \
 	babeltrace-plugin-filter-utils.mux \
@@ -29,6 +26,8 @@ MAN7_NO_ASCIIDOC_NAMES = \
 	babeltrace-plugin-source-ctf.lttng-live \
 	babeltrace-plugin-text \
 	babeltrace-plugin-utils
+MAN1_NO_ASCIIDOC_NAMES =
+MAN7_NO_ASCIIDOC_NAMES =
 
 # AsciiDoc sources and outputs
 MAN1_TXT = $(call manaddsuffix,.1.txt,$(MAN1_NAMES))

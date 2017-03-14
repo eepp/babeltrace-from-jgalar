@@ -13,23 +13,27 @@ DESCRIPTION
 -----------
 The Babeltrace `text.text` sink component class, member of the
 man:babeltrace-plugin-text(7) plugin, once instantiated, writes a custom
-textual representation of the events it receives to the console or to a
-file.
+textual representation of the notifications it receives on its
+`in` input port to the console or to a file.
 
 ----
-        +----------------+
-... --->| text.text sink |---> standard output or file
-        +----------------+
+        +-----------+
+        | text.text |
+        |    sink   |
+        |           |
+... --->@ in        |---> standard output or file
+        |           |
+        +-----------+
 ----
 
 By default, a `text.text` sink component writes its text to the
-standard output. You can use the param:output-path parameter for the
+standard output. You can use the param:path parameter for the
 component to write to a file instead.
 
-If you don't use the param:output-path parameter and the application's
+If you don't use the param:path parameter and the application's
 standard output is connected to a color-capable terminal, the component
 emits console color codes to enhance the output for human reading. You
-can use the param:color parameter to control the color behaviour.
+can use the param:color parameter to configured the color output.
 
 
 INITIALIZATION PARAMETERS
@@ -110,7 +114,7 @@ param:name-scope=(`yes` | `no`) (boolean)::
 param:no-delta=`yes` (boolean)::
     Do not print the time delta between consecutive lines.
 
-param:output-path='PATH' (string)::
+param:path='PATH' (string)::
     Write the text output to the file 'PATH' instead of the standard
     output.
 
@@ -120,17 +124,17 @@ param:verbose=`yes` (boolean)::
 
 PORTS
 -----
-A `text.text` sink component only has a default input port.
+
+Input
+~~~~~
+`in`::
+    Single input port which receives the notifications to convert to
+    a textual representation.
 
 
 QUERY OBJECTS
 -------------
 This component class has no objects to query.
-
-
-LIMITATIONS
------------
-A `text.text` sink component supports a single connection.
 
 
 include::common-footer.txt[]

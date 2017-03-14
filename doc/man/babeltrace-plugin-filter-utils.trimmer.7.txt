@@ -32,8 +32,8 @@ beggining and end times of the trimming range when needed.
 INITIALIZATION PARAMETERS
 -------------------------
 param:--clock-gmt=`yes` (boolean)::
-	Set the time zone of the param:begin and param:end parameters
-	to GMT instead of the local time zone.
+    Set the time zone of the param:begin and param:end parameters
+    to GMT instead of the local time zone.
 
 param:begin='BEGIN' (string)::
     Set the trimmer's beginning time to 'BEGIN'. See

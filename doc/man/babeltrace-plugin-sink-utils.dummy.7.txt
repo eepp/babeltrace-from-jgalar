@@ -13,15 +13,17 @@ DESCRIPTION
 -----------
 The Babeltrace `utils.dummy` sink component class, member of the
 man:babeltrace-plugin-utils(7) plugin, once instantiated, receives
-events from one or more input connections and does absolutely nothing
-with them.
+notifications on its `in` input port and does absolutely nothing with
+them.
 
 ----
-... -.
-      \ +------------------+
-... --->| utils.dummy sink |
-      / +------------------+
-... -'
+        +-------------+
+        | utils.dummy |
+        |     sink    |
+        |             |
+... --->@ in          |
+        |             |
+        +-------------+
 ----
 
 A `utils.dummy` sink component can be useful to run the conversion graph
@@ -30,12 +32,15 @@ with no side effect, for example to perform benchmark tests.
 
 INITIALIZATION PARAMETERS
 -------------------------
-This component class ignores its initialization parameters.
+This component class does not accept any initialization parameter.
 
 
 PORTS
 -----
-A `utils.dummy` sink component only has a default input port.
+Input
+~~~~~
+`in`::
+    Single input port which receives the notifications to discard.
 
 
 QUERY OBJECTS

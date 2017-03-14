@@ -15,37 +15,106 @@ DESCRIPTION
 The Babeltrace `utils.mux` filter component class, member of the
 man:babeltrace-plugin-utils(7) plugin, once instantiated, multiplexes
 the notifications received on multiple input ports into a linear
-sequence of notifications ordered by time on its output connection.
+sequence of notifications ordered by time on its output port.
 
 ----
         +-----------+
         | utils.mux |
-... --->@   filter  |
-        |           @---> ...
-... --->@           |
+        |  filter   |
+        |           |
+... --->@ in0       |
+        |           |
+... --->@ in1   out @---> ...
+        |           |
+        @ in2       |
         |           |
         +-----------+
 ----
 
-The events and other notifications are untouched: the `utils.mux`
-filter component only sorts them.
+The component always has exactly one unconnected input port. The input
+ports are named litvar:{in,k}, where 'k' is `0` (`in0` is the initial
+unconnected input port), then `1`, then `2`, and so on. The single
+output port is always named `out`.
 
-A `utils.mux` filter component's iterator signals the end of the
-iteration when all its input iterators are also done.
+This component uses the following rules to sort the received
+notifications, depending on the notification type:
+
+* **Trace event** notifications are sorted by clock value with the
+  highest priority. The clock class of the clock value with the
+  highest priority must be absolute, otherwise the component's
+  iterator fails.
++
+You can set the param:assume-absolute initialization parameter to make
+the component assume that all clock classes are absolute.
+
+* **Beginning of packet** notifications are sorted by the value of
+  the stream packet context's `timestamp_begin` field, as long as this
+  field's type is mapped to an absolute clock class. If the
+  `timestamp_begin` field's type is not mapped to an absolute clock
+  class or does not exist, the component considers the notification
+  as occuring _before_ the other current notifications.
++
+You can set the param:assume-absolute initialization parameter to make
+the component assume that all clock classes are absolute.
+
+* **End of packet** notifications are sorted by the value of
+  the stream packet context's `timestamp_end` field, as long as this
+  field's type is mapped to an absolute clock class. If the
+  `timestamp_end` field's type is not mapped to an absolute clock
+  class or does not exist, the component considers the notification
+  as occuring _before_ the other current notifications.
++
+You can set the param:assume-absolute initialization parameter to make
+the component assume that all clock classes are absolute.
+
+* Any **schema modification** notification is always considered as
+  occuring _before_ the other current notifications.
+
+* **Stream inactivity** notifications are sorted by clock value with the
+  highest priority. The clock class of this clock value must be
+  absolute, otherwise the component's iterator fails. The component
+  considers stream inactivity notifications to sort the current
+  notifications of its input ports, but they are never forwarded to its
+  output port.
++
+You can set the param:assume-absolute initialization parameter to make
+the component assume that all clock classes are absolute.
+
+* **End of stream** and **end of trace** notifications are always
+  considered as occuring _before_ the other current notifications.
+
+TODO What happens when all the input iterators are "finished"?
 
 
 INITIALIZATION PARAMETERS
 -------------------------
 The following parameters are optional unless indicated otherwise.
 
-IMPORTANT: TODO.
+param:assume-absolute=`yes` (boolean)::
+    Assume that all the clock classes which belong to the traces
+    attached to the received notifications are absolute.
 
 
 PORTS
 -----
-A `utils.mux` filter component, immediately after its creation, has
-a single input port named `in0`. When you connect an upstream port
-to this port, a new port `in1` is created and free, and so on.
+
+Input
+~~~~~
+`in0`::
+    Initial unconnected input port.
++
+When you connect an upstream port to this port, the component creates
+the unconnected `in1` input port.
+
+litvar:{in,k} ('k' can be `1`, `2`, `3`, ...)::
+    Unconnected input port automatically created when the port
+    litvar:{in,i}, where 'i' is ('k' - 1), is connected.
+
+
+Output
+~~~~~~
+`out`::
+    Single multiplexer's output port.
 
 
 QUERY OBJECTS

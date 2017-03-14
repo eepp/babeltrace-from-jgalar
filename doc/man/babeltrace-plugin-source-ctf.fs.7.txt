@@ -14,17 +14,33 @@ DESCRIPTION
 -----------
 The Babeltrace `ctf.fs` source component class, member of the
 man:babeltrace-plugin-ctf(7) plugin, once instantiated, opens one or
-more CTF traces on the file system and emits their events in order.
-
-If the param:recurse parameter is not true, then the param:path
-parameter _must_ be a directory which contains the CTF stream files of
-the trace to read.
+more CTF traces on the file system and emits the corresponding
+notifications on its output ports.
 
 ----
- CTF       +---------------+
-stream --->| ctf.fs source |---> ...
-files      +---------------+
+           +------------------+
+           |      ctf.fs      |
+           |      source      |
+           |                  |
+           |   trace0-stream0 @---> ...
+           |                  |
+ CTF       |   trace0-stream1 @---> ...
+stream --->|                  |
+files      |   trace0-stream2 @---> ...
+           |                  |
+           |   trace1-stream0 @---> ...
+           |                  |
+           |   trace1-stream1 @---> ...
+           |                  |
+           +------------------+
 ----
+
+Each output port of the component emits the notifications for a specific
+stream. This does not necessarily mean one output port per file:
+multiple CTF files can contain the packets of a single stream. The output
+ports are named litvarsuf:{in,k}, where 'k' is `0` (`in0` is the initial
+unconnected input port), then `1`, then `2`, and so on. The single
+output port is always named `out`.
 
 If the param:recurse parameter is true, then the created component (also
 known as the original component) recurses through the file hierarchy of
