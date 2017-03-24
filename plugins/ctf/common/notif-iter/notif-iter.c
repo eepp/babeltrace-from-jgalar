@@ -46,7 +46,7 @@
 
 #define PRINT_ERR_STREAM	notit->err_stream
 #define PRINT_PREFIX		"ctf-notif-iter"
-#include "print.h"
+#include "../print.h"
 
 #include "notif-iter.h"
 #include "../btr/btr.h"
