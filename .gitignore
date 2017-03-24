@@ -72,3 +72,7 @@ babeltrace-ctf.pc
 TAGS
 cscope*
 doc/api/Doxyfile
+*.gcno
+*.gcda
+*.gcov
+*.html
