@@ -35,3 +35,13 @@ pkgconfig_DATA = babeltrace.pc babeltrace-ctf.pc
 # in libbabeltrace, hence the symlink.
 install-exec-hook:
 	$(LN_S) -f libbabeltrace.so $(DESTDIR)$(libdir)/libbabeltrace-ctf.so
+
+
+noinst_PROGRAMS = test-muxer
+
+test_muxer_SOURCES = test-muxer.c
+test_muxer_LDFLAGS = -Wl, $(LD_NO_AS_NEEDED), -export-dynamic
+test_muxer_LDADD = $(top_builddir)/lib/libbabeltrace.la \
+	$(top_builddir)/compat/libcompat.la \
+	$(top_builddir)/common/libbabeltrace-common.la
+test_muxer_CFLAGS = $(AM_CFLAGS)
