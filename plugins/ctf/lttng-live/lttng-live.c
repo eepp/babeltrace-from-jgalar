@@ -40,6 +40,7 @@
 #include <babeltrace/graph/notification-heap.h>
 #include <babeltrace/graph/notification-iterator.h>
 #include <babeltrace/graph/notification-inactivity.h>
+#include <babeltrace/graph/graph.h>
 #include <babeltrace/compiler-internal.h>
 #include <inttypes.h>
 #include <glib.h>
@@ -48,6 +49,7 @@
 #include <plugins-common.h>
 
 #define BT_LOG_TAG "PLUGIN-CTF-LTTNG-LIVE"
+#define BT_LOGLEVEL_NAME "BABELTRACE_PLUGIN_CTF_LTTNG_LIVE_LOG_LEVEL"
 
 #include "data-stream.h"
 #include "metadata.h"
@@ -163,10 +165,15 @@ static
 void lttng_live_destroy_trace(struct bt_object *obj)
 {
 	struct lttng_live_trace *trace = container_of(obj, struct lttng_live_trace, obj);
+	int retval;
 
 	BT_LOGI("Destroy trace");
 	assert(bt_list_empty(&trace->streams));
 	bt_list_del(&trace->node);
+
+	retval = bt_ctf_trace_set_is_static(trace->trace);
+	assert(!retval);
+
 	lttng_live_metadata_fini(trace);
 	BT_PUT(trace->cc_prio_map);
 	g_free(trace);
@@ -263,9 +270,11 @@ void lttng_live_destroy_session(struct lttng_live_session *session)
 	BT_LOGI("Destroy session");
 	if (session->id != -1ULL) {
 		if (lttng_live_detach_session(session)) {
-			/* Old relayd cannot detach sessions. */
-			BT_LOGD("Unable to detach session %" PRIu64,
-				session->id);
+			if (!bt_graph_is_canceled(session->lttng_live->graph)) {
+				/* Old relayd cannot detach sessions. */
+				BT_LOGD("Unable to detach session %" PRIu64,
+					session->id);
+			}
 		}
 		session->id = -1ULL;
 	}
@@ -395,7 +404,11 @@ enum bt_ctf_lttng_live_iterator_status lttng_live_get_session(
 	struct lttng_live_trace *trace, *t;
 
 	if (lttng_live_attach_session(session)) {
-		return BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_ERROR;
+		if (bt_graph_is_canceled(lttng_live->graph)) {
+			return BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_AGAIN;
+		} else {
+			return BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_ERROR;
+		}
 	}
 	status = lttng_live_get_new_streams(session);
 	if (status != BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_OK &&
@@ -404,12 +417,8 @@ enum bt_ctf_lttng_live_iterator_status lttng_live_get_session(
 	}
 	bt_list_for_each_entry_safe(trace, t, &session->traces, node) {
 		status = lttng_live_metadata_update(trace);
-		if (status == BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_END) {
-			int retval;
-
-			retval = bt_ctf_trace_set_is_static(trace->trace);
-			assert(!retval);
-		} else if (status != BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_OK) {
+		if (status != BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_OK &&
+				status != BT_CTF_LTTNG_LIVE_ITERATOR_STATUS_END) {
 			return status;
 		}
 	}
@@ -909,7 +918,7 @@ struct bt_value *lttng_live_query_list_sessions(struct bt_component_class *comp_
 		goto error;
 	}
 
-	viewer_connection = bt_live_viewer_connection_create(url, stderr);
+	viewer_connection = bt_live_viewer_connection_create(url, NULL);
 	if (!viewer_connection) {
 		ret = BT_COMPONENT_STATUS_NOMEM;
 		goto error;
@@ -982,6 +991,7 @@ struct lttng_live_component *lttng_live_component_create(struct bt_value *params
 	struct bt_value *value = NULL;
 	const char *url;
 	enum bt_value_status ret;
+	struct bt_component *component;
 
 	lttng_live = g_new0(struct lttng_live_component, 1);
 	if (!lttng_live) {
@@ -1005,17 +1015,29 @@ struct lttng_live_component *lttng_live_component_create(struct bt_value *params
 		goto error;
 	}
 	lttng_live->viewer_connection =
-		bt_live_viewer_connection_create(lttng_live->url->str,
-			stderr);
+		bt_live_viewer_connection_create(lttng_live->url->str, lttng_live);
 	if (!lttng_live->viewer_connection) {
-		ret = BT_COMPONENT_STATUS_NOMEM;
+		if (bt_graph_is_canceled(lttng_live->graph)) {
+			ret = BT_COMPONENT_STATUS_AGAIN;
+		} else {
+			ret = BT_COMPONENT_STATUS_NOMEM;
+		}
 		goto error;
 	}
 	if (lttng_live_create_viewer_session(lttng_live)) {
-		ret = BT_COMPONENT_STATUS_ERROR;
+		if (bt_graph_is_canceled(lttng_live->graph)) {
+			ret = BT_COMPONENT_STATUS_AGAIN;
+		} else {
+			ret = BT_COMPONENT_STATUS_NOMEM;
+		}
 		goto error;
 	}
 	lttng_live->private_component = private_component;
+
+	component = bt_component_from_private_component(private_component);
+	lttng_live->graph = bt_component_get_graph(component);
+	bt_put(lttng_live->graph);	/* weak */
+	bt_put(component);
 
 	goto end;
 
@@ -1063,11 +1085,48 @@ error:
 	return ret;
 }
 
+BT_HIDDEN
+enum bt_component_status lttng_live_accept_port_connection(
+		struct bt_private_component *private_component,
+		struct bt_private_port *self_private_port,
+		struct bt_port *other_port)
+{
+	struct lttng_live_component *lttng_live =
+			bt_private_component_get_user_data(private_component);
+	struct bt_component *other_component;
+	enum bt_component_status status = BT_COMPONENT_STATUS_OK;
+	struct bt_port *self_port = bt_port_from_private_port(self_private_port);
+
+	other_component = bt_port_get_component(other_port);
+	bt_put(other_component);	/* weak */
+
+	if (!lttng_live->downstream_component) {
+		lttng_live->downstream_component = other_component;
+		goto end;
+	}
+
+	/*
+	 * Compare prior component to ensure we are connected to the
+	 * same downstream component as prior ports.
+	 */
+	if (lttng_live->downstream_component != other_component) {
+		BT_LOGW("Cannot connect ctf.lttng-live component port \"%s\" to component \"%s\": already connected to component \"%s\".",
+			bt_port_get_name(self_port),
+			bt_component_get_name(other_component),
+			bt_component_get_name(lttng_live->downstream_component));
+		status = BT_COMPONENT_STATUS_REFUSE_PORT_CONNECTION;
+		goto end;
+	}
+end:
+	bt_put(self_port);
+	return status;
+}
+
 static
 void __attribute__((constructor)) bt_lttng_live_logging_ctor(void)
 {
 	enum bt_logging_level log_level = BT_LOG_NONE;
-	const char *log_level_env = getenv("BABELTRACE_PLUGIN_LTTNG_LIVE_LOG_LEVEL");
+	const char *log_level_env = getenv(BT_LOGLEVEL_NAME);
 
 	if (!log_level_env) {
 		return;
@@ -1085,6 +1144,11 @@ void __attribute__((constructor)) bt_lttng_live_logging_ctor(void)
 		log_level = BT_LOGGING_LEVEL_ERROR;
 	} else if (strcmp(log_level_env, "FATAL") == 0) {
 		log_level = BT_LOGGING_LEVEL_FATAL;
+	} else {
+		bt_lttng_live_log_level = BT_LOGGING_LEVEL_FATAL;
+		BT_LOGF("Incorrect log level specified in %s",
+				BT_LOGLEVEL_NAME);
+		abort();
 	}
 
         bt_lttng_live_log_level = log_level;
