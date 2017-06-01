@@ -151,7 +151,7 @@ char *bt_common_get_home_plugin_path(void)
 	char *path = NULL;
 	const char *home_dir;
 
-	home_dir = get_home_dir();
+	home_dir = bt_get_home_dir();
 	if (!home_dir) {
 		goto end;
 	}
