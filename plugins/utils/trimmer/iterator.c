@@ -26,6 +26,8 @@
  * SOFTWARE.
  */
 
+#include <babeltrace/compat/time-internal.h>
+#include <babeltrace/compat/utc-internal.h>
 #include <babeltrace/graph/notification-iterator.h>
 #include <babeltrace/graph/private-notification-iterator.h>
 #include <babeltrace/graph/notification.h>
@@ -150,23 +152,23 @@ int update_lazy_bound(struct trimmer_bound *bound, const char *name,
 
 	if (bound->lazy_values.gmt) {
 		/* Get day, month, year. */
-		if (!gmtime_r(&timeval, &tm)) {
-			printf_error("Failure in gmtime_r()");
+		if (!bt_gmtime_r(&timeval, &tm)) {
+			printf_error("Failure in bt_gmtime_r()");
 			goto error;
 		}
 		tm.tm_sec = bound->lazy_values.ss;
 		tm.tm_min = bound->lazy_values.mm;
 		tm.tm_hour = bound->lazy_values.hh;
-		timeval = timegm(&tm);
+		timeval = bt_timegm(&tm);
 		if (timeval < 0) {
-			printf_error("Failure in timegm(), incorrectly formatted %s timestamp",
+			printf_error("Failure in bt_timegm(), incorrectly formatted %s timestamp",
 					name);
 			goto error;
 		}
 	} else {
 		/* Get day, month, year. */
-		if (!localtime_r(&timeval, &tm)) {
-			printf_error("Failure in localtime_r()");
+		if (!bt_localtime_r(&timeval, &tm)) {
+			printf_error("Failure in bt_localtime_r()");
 			goto error;
 		}
 		tm.tm_sec = bound->lazy_values.ss;
