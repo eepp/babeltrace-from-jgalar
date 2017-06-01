@@ -97,13 +97,13 @@ bool bt_common_is_setuid_setgid(void)
 {
 	return false;
 }
-#else
+#else /* __MINGW32__ */
 BT_HIDDEN
 bool bt_common_is_setuid_setgid(void)
 {
 	return (geteuid() != getuid() || getegid() != getgid());
 }
-#endif
+#endif /* __MINGW32__ */
 
 static
 char *bt_secure_getenv(const char *name)
