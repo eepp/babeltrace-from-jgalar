@@ -48,6 +48,7 @@ int uname(struct utsname *name)
 {
 	OSVERSIONINFO versionInfo;
 	SYSTEM_INFO sysInfo;
+	int ret = 0;
 
 	/* Get Windows version info */
 	memset(&versionInfo, 0, sizeof(OSVERSIONINFO));
@@ -79,7 +80,8 @@ int uname(struct utsname *name)
 			gethostname(name->nodename, UTSNAME_LENGTH);
 			WSACleanup();
 		} else {
-			return -1;
+			ret = -1;
+			goto end;
 		}
 	}
 
@@ -99,7 +101,8 @@ int uname(struct utsname *name)
 		strcpy(name->machine, "unknown");
 	}
 
-	return 0;
+end:
+	return ret;
 }
 #else /* __MINGW32__ */
 #include <sys/utsname.h>
