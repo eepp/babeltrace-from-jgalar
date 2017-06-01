@@ -122,7 +122,7 @@ const char *bt_get_home_dir(void)
 {
 	return g_get_home_dir();
 }
-#else
+#else /* __MINGW32__ */
 static
 const char *bt_get_home_dir(void)
 {
@@ -142,7 +142,7 @@ const char *bt_get_home_dir(void)
 end:
 	return val;
 }
-#endif
+#endif /* __MINGW32__ */
 
 BT_HIDDEN
 char *bt_common_get_home_plugin_path(void)
