@@ -52,7 +52,7 @@ int bt_uuid_generate(unsigned char *uuid_out)
 {
 	RPC_STATUS status;
 
-	status = UuidCreate((UUID *)uuid_out);
+	status = UuidCreate((UUID *) uuid_out);
 	if (status == RPC_S_OK)
 		return 0;
 	else
@@ -102,12 +102,7 @@ int bt_uuid_compare(const unsigned char *uuid_a,
 {
 	RPC_STATUS status;
 
-	if (!UuidCompare((UUID *) uuid_a, (UUID *) uuid_b,
-			&status)) {
-		return 0;
-	} else {
-		return -1;
-	}
+	return !UuidCompare((UUID *) uuid_a, (UUID *) uuid_b, &status) ? 0 : -1;
 }
 
 #endif
