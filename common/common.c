@@ -1156,7 +1156,7 @@ size_t bt_common_get_page_size(void)
 
 	page_size = bt_sysconf(_SC_PAGESIZE);
 	if (page_size < 0) {
-		BT_LOGF_STR("Cannot get system page size.");
+		printf_error("Cannot get system page size.");
 		abort();
 	}
 
