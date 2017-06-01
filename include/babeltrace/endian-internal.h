@@ -66,6 +66,7 @@
 #define be64toh(x) BE_64(x)
 
 #elif defined(__MINGW32__)
+#include <stdint.h>
 
 #ifndef __BIG_ENDIAN
 #define __BIG_ENDIAN 4321
