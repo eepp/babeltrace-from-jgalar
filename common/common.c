@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <glib.h>
+#include <stdlib.h>
 #include <babeltrace/babeltrace-internal.h>
 #include <babeltrace/common-internal.h>
 #include <babeltrace/compat/unistd-internal.h>
