@@ -45,8 +45,9 @@ struct tm *bt_gmtime_r(const time_t *timep, struct tm *result)
 {
 	struct tm *local_res;
 
-	if (!result)
+	if (!result) {
 		goto error;
+	}
 
 	local_res = gmtime(timep);
 	if (!local_res) {
@@ -65,8 +66,9 @@ struct tm *bt_localtime_r(const time_t *timep, struct tm *result)
 {
 	struct tm *local_res;
 
-	if (!result)
+	if (!result) {
 		goto error;
+	}
 
 	local_res = localtime(timep);
 	if (!local_res) {
