@@ -1,10 +1,8 @@
-#ifndef _BABELTRACE_COMPAT_DIRENT_H
-#define _BABELTRACE_COMPAT_DIRENT_H
+#ifndef COMPAT_LOGGING_H
+#define COMPAT_LOGGING_H
 
 /*
- * babeltrace/compat/dirent.h
- *
- * Copyright (C) 2015 Michael Jeanson <mjeanson@efficios.com>
+ * Copyright (c) 2017 Michael Jeanson <mjeanson@efficios.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,25 +23,9 @@
  * SOFTWARE.
  */
 
-#include <dirent.h>
+#define BT_LOG_OUTPUT_LEVEL bt_compat_log_level
+#include <babeltrace/logging-internal.h>
 
-#ifdef HAVE_DIRFD
-static inline
-int bt_dirfd(DIR *dir) {
-	return dirfd(dir);
-}
-#else
-# ifndef __XOPEN_OR_POSIX
-static inline
-int bt_dirfd(DIR *dir) {
-	return dir->dd_fd;
-}
-# else
-static inline
-int bt_dirfd(DIR *dir) {
-	return dir->d_fd;
-}
-# endif
-#endif
+BT_LOG_LEVEL_EXTERN_SYMBOL(bt_compat_log_level);
 
-#endif /* _BABELTRACE_COMPAT_DIRENT_H */
+#endif /* COMPAT_LOGGING_H */

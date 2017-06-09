@@ -1,12 +1,5 @@
-#ifndef BABELTRACE_CTF_WRITER_WRITER_INTERNAL_H
-#define BABELTRACE_CTF_WRITER_WRITER_INTERNAL_H
-
 /*
- * BabelTrace - CTF Writer: Writer internal
- *
- * Copyright 2013, 2014 Jérémie Galarneau <jeremie.galarneau@efficios.com>
- *
- * Author: Jérémie Galarneau <jeremie.galarneau@efficios.com>
+ * Copyright (c) 2017 Michael Jeanson <mjeanson@efficios.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,23 +20,7 @@
  * SOFTWARE.
  */
 
-#include <babeltrace/ctf-writer/writer.h>
-#include <babeltrace/babeltrace-internal.h>
-#include <glib.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <babeltrace/ctf-ir/trace.h>
-#include <babeltrace/object-internal.h>
+#define BT_LOG_OUTPUT_LEVEL bt_compat_log_level
+#include <babeltrace/logging-internal.h>
 
-struct bt_ctf_writer {
-	struct bt_object base;
-	int frozen; /* Protects attributes that can't be changed mid-trace */
-	struct bt_ctf_trace *trace;
-	GString *path;
-	int metadata_fd;
-};
-
-BT_HIDDEN
-void bt_ctf_writer_freeze(struct bt_ctf_writer *writer);
-
-#endif /* BABELTRACE_CTF_WRITER_WRITER_INTERNAL_H */
+BT_LOG_INIT_LOG_LEVEL(bt_compat_log_level, "BABELTRACE_COMPAT_LOG_LEVEL");

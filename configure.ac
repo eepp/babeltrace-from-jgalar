@@ -38,7 +38,7 @@ AC_PROG_CC_STDC
 
 # Checks for programs.
 AC_PROG_MAKE_SET
-LT_INIT
+LT_INIT(win32-dll)
 AC_PROG_YACC
 AC_PROG_LEX
 AC_PROG_MKDIR_P
@@ -62,6 +62,7 @@ AC_HEADER_STDBOOL
 AC_CHECK_HEADERS([ \
 	fcntl.h \
 	float.h \
+	ftw.h \
 	libintl.h \
 	limits.h \
 	malloc.h \
@@ -117,14 +118,11 @@ AC_TYPE_UINT8_T
 # Checks for library functions.
 AC_FUNC_ALLOCA
 AC_FUNC_FORK
-AC_FUNC_MALLOC
 AC_FUNC_MKTIME
 AC_FUNC_MMAP
-AC_FUNC_REALLOC
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([ \
 	atexit \
-	dirfd \
 	dup2 \
 	ftruncate \
 	gethostbyname \
@@ -151,8 +149,13 @@ AC_CHECK_FUNCS([ \
 	uname \
 ])
 
+# AC_FUNC_MALLOC causes problems when cross-compiling.
+#AC_FUNC_MALLOC
+#AC_FUNC_REALLOC
+
 MINGW32=no
 DEFAULT_ENABLE_DEBUG_INFO=yes
+LT_NO_UNDEFINED=""
 AS_CASE([$host_os],
   [solaris*|darwin*],
     [
@@ -162,10 +165,12 @@ AS_CASE([$host_os],
     [
 	MINGW32=yes
 	DEFAULT_ENABLE_DEBUG_INFO=no
+	LT_NO_UNDEFINED="-no-undefined"
     ]
 )
 
 AM_CONDITIONAL([BABELTRACE_BUILD_WITH_MINGW], [test "x$MINGW32" = "xyes"])
+AC_SUBST(LT_NO_UNDEFINED)
 
 # Check for uuid in system libs
 AC_CHECK_FUNCS([uuid_generate],
@@ -228,13 +233,6 @@ AC_CHECK_LIB([c], [open_memstream],
 AC_CHECK_LIB([c], [posix_fallocate],
 [
 	AC_DEFINE_UNQUOTED([BABELTRACE_HAVE_POSIX_FALLOCATE], 1, [Has posix_fallocate support.])
-]
-)
-
-# Check for faccessat
-AC_CHECK_LIB([c], [faccessat],
-[
-	AC_DEFINE_UNQUOTED([BABELTRACE_HAVE_FACCESSAT], 1, [Has faccessat support.])
 ]
 )
 
